@@ -17,7 +17,9 @@ support vector machine(SVM)이 활발하게 쓰인 시점은 1998년 이후부�
 ### Shatter
 본론부터 말하자면 어떤 데이터셋 $S$가 있을 때, 어떤 함수 집합 $H$가 각 데이터 객체가 가질 수 있는 모든 이진분류 경우의 수에 대해 이를 모두 성공적으로 분류할 수 있다면, $S$는 $H$에 의해 shatter 된다($S$ is shattered by $H$)고 합니다. 이게 무슨 소리인지 한번 예시를 들어보겠습니다. 
 
-2차원 평면상에 겹치지 않는 세 개의 점들의 집합 $S$가 있다고 합시다. 그리고 직선 함수의 집합 $H=\{wx + b = 0\}$
+2차원 평면상에 겹치지 않는 세 개의 점들의 집합 $S$와 직선 함수의 집합 $H= \lbrace sgn(\vec{w}\vec{x} + b > 0) | \vec{w} \ne \vec{0} \rbrace$가 있다고 합시다. 그러면 각 점이 가질 수 있는 이진분류의 경우의 수를 모두 표현하면 총 8개로, 아래 그림처럼 나타날 것입니다.
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199201272-2b002960-1266-4ee9-805c-18ab4146ab86.pngg" height="250px" width="600px"></p>
+![image]()
 
 
 ---
