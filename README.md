@@ -1,12 +1,20 @@
 # SVM_tutorial
 a simple tutorial for support vector machine
 
-이 repository는 support vector machine에 대한 기본적인 아이디어와 증명을 다루고 이를 기반으로 support vector machine을 다른 모듈의 구현체없이 직접 구현해보는 순서로 구성됩니다. 여기서 참고한  이론적인 토대는 주로 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=ytRmxBvyGG0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW)를 참고하였음을 밝힙니다. 
+이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 support vector machine에 대한 기본적인 아이디어와 증명을 다루고 이를 기반으로 support vector machine을 다른 모듈의 구현체없이 직접 구현해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=ytRmxBvyGG0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW)를 참고하였음을 밝힙니다. 
 
 ## 목차
-1. [Concepts of Support Vector Machine(SVM)](#concepts-of-support-vector-machinesvm)
-2. [SVM Implementation](#svm-implementation)
-3. [Conclusion](#conclusion)
+1. [Theoretical Background](#theoretical-background)
+2. [Concepts of Support Vector Machine(SVM)](#concepts-of-support-vector-machinesvm)
+3. [SVM Implementation](#svm-implementation)
+4. [Conclusion](#conclusion)
+
+---
+
+## Theoretical Background
+support vector machine(SVM)이 활발하게 쓰인 시점은 1998년 이후부터 2010년대 초반까지였습니다. 이후 딥러닝 계열의 알고리즘들이 SVM을 뛰어넘으면서 점차 SVM에 대한 열기가 사그라들었지만, 어쨌든 딥러닝 계열의 알고리즘들은 그 쓸모를 인정받기 위해 반드시 비교대상으로 넣어야 했던 알고리즘이 바로 SVM이었습니다. SVM이 활발하게 쓰일 당시 많은 머신러닝 알고리즘들은 shatter, VC dimension, structural/empirical risk minimization 등의 여러 이론적 배경을 기반하고 있는데요, 본격적인 SVM 소개에 앞서 이를 먼저 짚고 넘어가보도록 하겠습니다. 
+
+### Shatter
 
 
 ---
