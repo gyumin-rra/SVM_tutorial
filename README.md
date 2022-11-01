@@ -37,16 +37,16 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 
 따라서 어떤 모델의 VC dimension이 크다는 것은 어떤 training sample이 주어졌을 때, 이를 적합시키는(fit) decision boundary를 잘 만들어낼 수 있음을 의미합니다. 쉽게 말해 training error가 줄어드는 것이죠. 이를 다른 말로는 model의 capcity가 크다고도 표현합니다. 정리하면, 복잡한 모델일수록 ***1)*** VC dimension이 크고 ***2)*** 학습시 error가 줄어들기 쉽고 ***3)*** 모델의 capacity가 크다고 할 수 있겠습니다.
 
-그런데 머신러닝을 공부하다 보면, training error가 줄어드는 것이 무조건 좋은게 아니라는 말을 한번쯤은 접하게 되곤 합니다. 바로 overfitting 문제가 그것입니다. training error를 완전히 줄여서 학습 데이터에 대한 decision boundary를 완벽하게 만들어냈지만, 이 때문에 test set에서의 error는 오히려 올라가는 상황이 생기는 경우가 많습니다. 이러한 경우는 그렇다면 모델의 복잡도가 높은 상황에서 많이 생길까요 아니면 낮은 상황에서 많이 생길까요? 복잡도가 높은 상황에서 많이 생깁니다. 결국 모델의 복잡도가 올라갈수록(VC dimension이 커질수록) 모델의 test set에서의 error가 높아지는, 다른 말로 일반화 성능(generalization ability)이 낮아질 가능성이 커지는 것이고, 다시 말해 test error와 모델의 capacity 사이에는 trade-off가 있다고 할 수 있겠습니다. 이를 표로 정리하면 아래와 같습니다. 
-| VC dimension | 모델의 복잡도 | 표현력 | capacity | training error | test error(일반화 성능)              |
-| :--:         | :--:          | :--:   | :--:    | :--:           | :--:                                |
-| 작다.        |  낮다.        |  낮다. | 작다.    | 큰 편이다.     | (클 수도 있으나) 작아진다.           |
-| 크다.        |  높다.        |  높다. | 크다.    | 작은 편이다.   | (작을 수도 있으나) 커진다.           |
+그런데 머신러닝을 공부하다 보면, training error가 줄어드는 것이 무조건 좋은게 아니라는 말을 한번쯤은 접하게 되곤 합니다. 바로 overfitting 문제가 그것입니다. 당연히 어느정도는 training error를 줄이도록 모델을 학습시켜야 하겠지만 training error를 완전히 줄여서 학습 데이터에 대한 decision boundary를 완벽하게 만들어낸다면 이 때문에 test set에서의 error는 오히려 올라가는 상황이 생기는 경우가 많습니다. 이러한 경우는 모델의 복잡도가 높은 경우 잘 발생할 수 있기 때문에 결국 모델의 복잡도가 올라갈수록(VC dimension이 커질수록) 모델의 test set에서의 error가 높아지는, 즉 일반화 성능(generalization ability)이 낮아질 가능성이 커지는 것이고, training error와 모델의 capacity 사이에는 trade-off가 있다고 할 수 있겠습니다. 이를 표로 정리하면 아래와 같습니다. 
+| VC dimension | 모델의 복잡도 | 표현력     | capacity | training error | test error(일반화 성능)              |
+| :--:         | :--:          | :--:      | :--:      | :--:           | :--:                                |
+| 작아지면     |  낮아진다.     | 낮아진다. | 작아진다. | 커진다.        |   (어느정도로 작아지느냐가 중요)     |
+| 커지면       |  높아진다.     | 높아진다. | 커진다.   | 작아진다.      | 높아질 가능성이 커진다.              |
 
-이러한 모델의 training error와 capacity 간의 trade-off 관계에 착안한 것이 바로 structural risk minimization(구조적 위험 최소화)입니다.
+이러한 모델의 training error와 capacity 간의 trade-off 및 test error의 변화에에 착안한 것이 바로 structural risk minimization(구조적 위험 최소화)입니다. 
 
 ### Structural Risk Minimization
-앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어들지만 test errorsms 
+앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어드는 경향을 보이고 test error는 커지는 경향을 보입니다. 이러한 관계를 아래 도표(K. . -R. Muller et al. "An introduction to kernel-based learning algorithms," March 2001)처럼 나타낼 수 있습니다. 
 
 
 ---
