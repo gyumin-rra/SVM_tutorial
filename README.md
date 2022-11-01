@@ -47,6 +47,7 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 
 ### Structural Risk Minimization
 앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어드는 경향을 보이고 test error는 커지는 경향을 보입니다. 이러한 관계를 아래 도표(K. . -R. Muller et al. "An introduction to kernel-based learning algorithms," March 2001)처럼 나타낼 수 있습니다. 
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199259056-306d5c24-62df-4df3-907a-def79ff4be8e.png" height="350px" width="400px"></p>
 
 
 ---
