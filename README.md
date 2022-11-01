@@ -15,12 +15,15 @@ a simple tutorial for support vector machine
 support vector machine(SVM)이 활발하게 쓰인 시점은 1998년 이후부터 2010년대 초반까지였습니다. 이후 딥러닝 계열의 알고리즘들이 SVM을 뛰어넘으면서 점차 SVM에 대한 열기가 사그라들었지만, 어쨌든 딥러닝 계열의 알고리즘들은 그 쓸모를 인정받기 위해 반드시 비교대상으로 넣어야 했던 알고리즘이 바로 SVM이었습니다. SVM이 활발하게 쓰일 당시 많은 머신러닝 알고리즘들은 shatter, VC dimension, structural/empirical risk minimization 등의 여러 이론적 배경을 기반하고 있는데요, 본격적인 SVM 소개에 앞서 이를 간단하게나마 먼저 짚고 넘어가보도록 하겠습니다. 
 
 ### Shatter
-본론부터 말하자면 어떤 데이터셋 $S$가 있을 때, 어떤 함수 집합 $H$가 각 데이터 객체가 가질 수 있는 모든 이진분류 경우의 수에 대해 이를 모두 성공적으로 분류할 수 있다면, $S$는 $H$에 의해 shatter 된다($S$ is shattered by $H$)고 합니다. 이게 무슨 소리인지 한번 예시를 들어보겠습니다. 
+본론부터 말하자면 어떤 데이터셋 $S$가 있을 때, 어떤 함수 집합 $H$가 각 데이터 객체가 가질 수 있는 모든 이진분류 경우의 수(dichotomies)에 대해 이를 모두 성공적으로 분류할 수 있다면, $S$는 $H$에 의해 shatter된다($S$ is shattered by $H$)고 합니다. 이게 무슨 소리인지 한번 예시를 들어보겠습니다. 
 
-2차원 평면상에 겹치지 않는 세 개의 점들의 집합 $S$와 직선 함수의 집합 $H= \lbrace sign(\vec{w}\vec{x} + b) | \vec{w} \ne \vec{0} \rbrace$가 있다고 합시다. 그러면 각 점이 가질 수 있는 이진분류의 경우의 수를 모두 표현하면 총 8개로, 아래 그림처럼 나타날 것입니다.(편의상, 각 이진분류의 label을 색으로 나타내었습니다. 붉은 색을 +1, 푸른색을 -1이라 하겠습니다.)
+2차원 평면상에 겹치지 않고 한 직선위에 있지 않은 임의의 세 개의 점들의 집합 $S$와 직선 함수의 집합 $H= \lbrace y\cdot sign(\vec{w}\vec{x} + b) | \vec{w} \ne \vec{0}, y = 1 or -1 \rbrace$가 있다고 합시다. 그러면 각 점이 가질 수 있는 이진분류의 경우의 수를 모두 표현하면 총 8개로, 아래 그림처럼 나타날 것입니다.(편의상, 각 이진분류의 label을 색으로 나타내어 붉은 색을 +1, 푸른색을 -1이라 하겠습니다.)
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199213355-9a53c005-f269-4bab-afc7-d617929812a4.png" height="350px" width="800px"></p>
 
-위 점들을 구분할 수 있는 직선 식을 그보면 
+위 점들을 구분할 수 있는 직선 함수와 함께 위 그림을 다시 나타내면 아래와 같습니다.
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199223090-a8ce9208-e823-4b77-95cc-ff31e5f2d610.png" height="350px" width="800px"></p>
+
+보시는 바와 같이, $S$에서 만들어진 모든 이진분류 결과가 $H$의 function들에 의해 나타날 수 있음을 알 수 있으므로 $S$는 $H$에 의해 shatter 됨을 알 수 있습니다. shatter의 개념에 더하여 
 
 
 ---
