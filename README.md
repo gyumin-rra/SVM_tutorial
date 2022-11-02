@@ -23,9 +23,9 @@ support vector machine(SVM)이 활발하게 쓰인 시점은 1998년 이후부�
 위 점들을 구분할 수 있는 직선 함수와 함께 위 그림을 다시 나타내면 아래와 같습니다.
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199223090-a8ce9208-e823-4b77-95cc-ff31e5f2d610.png" height="350px" width="800px"></p>
 
-보시는 바와 같이, $S$에서 만들어진 모든 이진분류 결과가 $H$의 function들에 의해 나타날 수 있음을 알 수 있으므로 $S$는 $H$에 의해 shatter 됨을 알 수 있습니다. 
+보시는 바와 같이, $S$에서 만들어진 모든 이진분류 결과가 $H$의 function들에 의해 나타날 수 있음을 알 수 있으므로 $S$는 $H$에 의해 shatter 됨을 알 수 있습니다. 이러한 shatter의 개념에서 함수 집합이라는 말을 우리가 흔히 머신러닝에서 말하는 모델이라고 할 수 있을 것입니다. 결국 모델링도 어느 정도 정의되어있는 함수 집합에서 training error를 줄이는 함수를 찾아내는 것이기 때문입니다. 예를 들어 decision tree와 같은 경우도 $\vec{x}$를 $y$에 매핑하는 여러 decision tree 함수 중 특정 decision tree 함수를 찾아낸다고 볼수 있겠죠.
 
-이 shatter의 개념을 곰곰히 생각해보면 결국 이것은 우리에게 어떤 이진분류 문제가 주어졌을 때, 우리가 100%의 accuracy의 분류 모델을 만들 수 있음이 확실한 데이터 객체의 수는 몇인지에 대한 개념과 일맥상통한다고 볼 수 있습니다. 예시로, 2차원 평면에서 아까와 같은 선형 분류 모델을 만들었을 때 모델이 shatter할 수 있는 최대 점의 개수를 생각해보면 3개임을 직관적으로 알 수 있습니다. 4개부터는 유명한 [XOR 문제와 같은 경우](https://i.stack.imgur.com/G7g23.png)가 존재하기 때문에 불가능하죠. 이러한 관점에서 접근한 것이 바로 VC dimension입니다.
+shatter의 개념을 곰곰히 생각해보면 결국 이것은 우리에게 어떤 이진분류 문제가 주어졌을 때, 우리가 100%의 accuracy의 분류 모델을 만들 수 있음이 확실한 데이터 객체의 수는 몇인지에 대한 개념과 일맥상통한다고 볼 수 있습니다. 예시로, 2차원 평면에서 아까와 같은 선형 분류 모델을 만들었을 때 모델이 shatter할 수 있는 최대 점의 개수를 생각해보면 3개임을 직관적으로 알 수 있습니다. 4개부터는 유명한 [XOR 문제와 같은 경우](https://i.stack.imgur.com/G7g23.png)가 존재하기 때문에 불가능하죠. 이러한 관점에서 접근한 것이 바로 VC dimension입니다.
 
 ### VC(Vapnik-Chervonenkis) Dimension
 VC dimension은 한마디로 어떤 데이터셋 $S$와 함수집합 $H$에 의해 shatter 되는 $S$의 부분집합 중 가장 큰 부분집합의 크기입니다. 예를 들어 아까의 함수 집합 $H$와 같은 선형 분류기들의 $d$차원에서의 VC dimension은, 해당 집합의 함수들이 $d+1$개의 점을 shatter하는 경우가 존재하되 $d+2$개의 점부터는 shatter할 수 없기 때문입니다. 말이 좀 어려울 수 있는데, 예를 들면 2차원에서 선형분류기는 세개의 점을 shatter하는 경우가 존재합니다. 바로 위와 같은 경우가 그것이죠. 하지만 어떤 경우에도 2차원에 4개 이상의 점이 있을 경우 이를 shatter할 수 없습니다. 이는 사실 수학적으로 증명되어 있습니다만 우선 여기서는 생략하도록 하겠습니다(궁금하신 분들은 Mehryar Mohri의 Foundation of Machine Learning을 참조하시면 좋을 듯 합니다). 
@@ -38,17 +38,21 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 따라서 어떤 모델의 VC dimension이 크다는 것은 어떤 training sample이 주어졌을 때, 이를 적합시키는(fit) decision boundary를 잘 만들어낼 수 있음을 의미합니다. 쉽게 말해 training error가 줄어드는 것이죠. 이를 다른 말로는 model의 capcity가 크다고도 표현합니다. 정리하면, 복잡한 모델일수록 ***1)*** VC dimension이 크고 ***2)*** 학습시 error가 줄어들기 쉽고 ***3)*** 모델의 capacity가 크다고 할 수 있겠습니다.
 
 그런데 머신러닝을 공부하다 보면, training error가 줄어드는 것이 무조건 좋은게 아니라는 말을 한번쯤은 접하게 되곤 합니다. 바로 overfitting 문제가 그것입니다. 당연히 어느정도는 training error를 줄이도록 모델을 학습시켜야 하겠지만 training error를 완전히 줄여서 학습 데이터에 대한 decision boundary를 완벽하게 만들어낸다면 이 때문에 test set에서의 error는 오히려 올라가는 상황이 생기는 경우가 많습니다. 이러한 경우는 모델의 복잡도가 높은 경우 잘 발생할 수 있기 때문에 결국 모델의 복잡도가 올라갈수록(VC dimension이 커질수록) 모델의 test set에서의 error가 높아지는, 즉 일반화 성능(generalization ability)이 낮아질 가능성이 커지는 것이고, training error와 모델의 capacity 사이에는 trade-off가 있다고 할 수 있겠습니다. 이를 표로 정리하면 아래와 같습니다. 
-| VC dimension | 모델의 복잡도 | 표현력     | capacity | training error | test error(일반화 성능)              |
-| :--:         | :--:          | :--:      | :--:      | :--:           | :--:                                |
-| 작아지면     |  낮아진다.     | 낮아진다. | 작아진다. | 커진다.        |   (어느정도로 작아지느냐가 중요)     |
-| 커지면       |  높아진다.     | 높아진다. | 커진다.   | 작아진다.      | 높아질 가능성이 커진다.              |
+| VC dimension | 모델의 복잡도 | 표현력     | capacity | training error | test error                      |
+| :--:         | :--:          | :--:      | :--:      | :--:           | :--:                            |
+| 작아지면     |  낮아진다.     | 낮아진다. | 작아진다. | 커진다.        |  (어느정도로 작아지느냐가 중요)  |
+| 커지면       |  높아진다.     | 높아진다. | 커진다.   | 작아진다.      | 높아질 가능성이 커진다.          |
 
 이러한 모델의 training error와 capacity 간의 trade-off 및 test error의 변화에 착안한 것이 바로 structural risk minimization(구조적 위험 최소화)입니다. 
 
 ### Structural Risk Minimization
 앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어드는 경향을 보이고 test error는 커지는 경향을 보입니다. 이러한 관계를 아래 도표(K.R. Muller et al., An introduction to kernel-based learning algorithms, 2001)처럼 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199259056-306d5c24-62df-4df3-907a-def79ff4be8e.png" height="350px" width="400px"></p>
-위 그래프에서 confidence는 모델의 complexity에 따른 최대 complexity이고(uppper bound) empirical risk는 training error 입니다. 그리고 test error의 bound가 바로 expected risk이죠. 이러한 관계를 현대의 우리는 여러 사례를 통해 어느정도 이미 직관적으로 짐작하고 있지만, 이 도표가 만들어졌을즈음의 시기에는 위 도표와 같은 관계를 수학적으로 *증명*
+위 그래프에서 confidence는 모델의 complexity에 따른 최대 complexity이고(uppper bound) empirical risk는 training error 입니다. 그리고 test error의 기댓값이 바로 expected risk이고 도표의 . 결국 위 도표에 따르면 test error의 기댓값은 최대 complexity와 training error 모두 적절한 수준인 경우에 최소화 할 수 있다는 것을 알 수 있습니다. 이러한 관계를 현대의 우리는 여러 사례를 통해 어느정도 이미 직관적으로 짐작하고 있지만, 이 도표가 만들어졌을즈음의 시기에는 위 도표와 같은 관계를 수학적으로 *증명*하기 위해 많은 노력을 기울였습니다. 해당 증명을 모두 다루지는 않겠지만, 중요한 부분만 간단하게 살펴보겠습니다. 
+
+#### expected risk(test error) upper bound
+데이터셋의 객체 $(\vec{x_i}, y_i)$들이 probability density function $P(\vec{x}, y)$에 의해 생성되었다고 합시다. $x$가 n차원의 벡터이고, $y=1or-1$이라 할 때, 둘을 매핑하는 함수 $f:R^n \rightarrow \lbrace -1, +1 \rbrace$
+
 
 ---
 
