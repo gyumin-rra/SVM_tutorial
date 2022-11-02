@@ -43,12 +43,12 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 | 작아지면     |  낮아진다.     | 낮아진다. | 작아진다. | 커진다.        |   (어느정도로 작아지느냐가 중요)     |
 | 커지면       |  높아진다.     | 높아진다. | 커진다.   | 작아진다.      | 높아질 가능성이 커진다.              |
 
-이러한 모델의 training error와 capacity 간의 trade-off 및 test error의 변화에에 착안한 것이 바로 structural risk minimization(구조적 위험 최소화)입니다. 
+이러한 모델의 training error와 capacity 간의 trade-off 및 test error의 변화에 착안한 것이 바로 structural risk minimization(구조적 위험 최소화)입니다. 
 
 ### Structural Risk Minimization
-앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어드는 경향을 보이고 test error는 커지는 경향을 보입니다. 이러한 관계를 아래 도표(K. . -R. Muller et al. "An introduction to kernel-based learning algorithms," March 2001)처럼 나타낼 수 있습니다. 
+앞서 설명했듯 모델의 capacity가 올라가면, 즉 VC dimension이 크면, training error는 줄어드는 경향을 보이고 test error는 커지는 경향을 보입니다. 이러한 관계를 아래 도표(K.R. Muller et al., An introduction to kernel-based learning algorithms, 2001)처럼 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199259056-306d5c24-62df-4df3-907a-def79ff4be8e.png" height="350px" width="400px"></p>
-
+위 그래프에서 confidence는 모델의 complexity에 따른 최대 complexity이고(uppper bound) empirical risk는 training error 입니다. 그리고 test error의 bound가 바로 expected risk이죠. 이러한 관계를 현대의 우리는 여러 사례를 통해 어느정도 이미 직관적으로 짐작하고 있지만, 이 도표가 만들어졌을즈음의 시기에는 위 도표와 같은 관계를 수학적으로 *증명*
 
 ---
 
