@@ -53,8 +53,11 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 #### expected risk(test error) upper bound
 데이터셋의 객체 $(\vec{x_i}, y_i)$들이 probability density function $P(\vec{x}, y)$에 의해 생성되었다고 합시다. 그리고 $x$가 n차원의 벡터이고, $y=1or-1$이라 할 때, 둘을 매핑하는 함수 $f:R^n \rightarrow \lbrace -1, +1 \rbrace$를 우리가 찾고자 하는 모델이라고 합시다. 함수 $f$의 parameter를 $w$라 하고, 실제 y와 f에 의해 매핑된 값의 차이를 input으로 하는 loss function을 $L$이라 하겠습니다. 그러면 우선 함수 $f$의 parameter $w$를 찾아내는 작업이 곧 training일 것입니다. 그리고 training이 되어 찾아낸 $w$에 대한 test error의 기댓값을 $R$이라 하면 아래와 같이 나타 낼 수 있겠습니다.
 
-$$R(w) = \int L(y, f(x, w))dP(x,y)$$
+$$R(w) = \int L(y, f(x, w))dP(x, y)$$
 
+우리의 목적은 저 기댓값을 최소화시키는 $w$를 찾는 것으로 생각할 수 있겠습니다. 그러나 우리가 $P(x, y)$를 알 수 있는 방법이 없다면 위 식을 적분하는 것이 불가능하기 때문에 sample $(\vec{x_i}, y_i)$을 $l$개 추출하여 emprical risk(즉, training error)을 이용하여 위 식을 추정할 것입니다. sample들에 대한 empirical risk는 아래와 같습니다.
+
+$$R_{emp}(w) ={1 \over n} \sum_{i=1}^{l} L(y_i, f(x_i, w))$$
 
 ---
 
@@ -63,7 +66,7 @@ $$R(w) = \int L(y, f(x, w))dP(x,y)$$
 ---
 
 ## SVM Implementation
-t-SNE 알고리즘의 순서부터 생각해봅시다. 하이퍼 파라미터의 설정 이후에는 1) $p_{j|i}$를 계산(전체 객체 n개에 대해), 2) $p_{ij}$ 계산, 3) 초기해 설정, 4) gradient 계산, 5) solution update, 6) 이후 t번 4, 5) 반복의 순서로 이뤄져야 합니다. 하지만 실제로 이를 구현하기 위해서는 1)을 조금 더 깊게 파고 들어야합니다. 앞서 살펴본 t-SNE의 개념을 되짚어 보면, $p_{j|i}$를 계산하기 위해서는 각 객체 사이의 유클리드 거리 계산 및 perplexity에 따른 각 데이터 객체 별 $\sigma_i$를 도출하는 과정이 선행되어야 함을 알 수 있습니다. $\sigma_i$ 도출을 위해 흔히 사용하는 알고리즘은 binary search 입니다. 이진탐색의 개념을 자세히 짚고 넘어가지는 못하지만, 최대한 압축하여 설명하자면 여기서의 이진탐색은 0부터 최대 $\sigma_i$ 중간값의 $\sigma_i$를 구해 대입해본 후 원하는 perplexity 보다 낮으면 0과 현재 $\sigma_i$ 사이의 값을 넣어보고 높으면 현재 $\sigma_i$와 최대 $\sigma_i$ 사이의 값을 넣어보는 것을 반복하며 perplexity를 만족하는 $\sigma_i$를 찾는 식으로 찾아내는 것을 말합니다. 
+
 
 우선 실제 구현 및 실험에 앞서 필요한 모듈 등의 버젼은 아래와 같습니다.
 | env_name   | version |
