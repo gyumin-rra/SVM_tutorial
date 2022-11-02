@@ -59,9 +59,22 @@ $$R(w) = \int L(y, f(x, w))dP(x, y)$$
 
 $$R_{emp}(w) ={1 \over n} \sum_{i=1}^{l} L(y_i, f(x_i, w))$$
 
+그리고 여기에 Vapnik 선생님에 의해 증명된 바(1995)에 따르면 $R(w)$는 $R_{emp}(w)$, 함수 $f$를 포함하는 함수공간 $F$의 VC dimension $h$, sample의 수 $l$, 그리고 특정 확률 값 $\delta$에 의해 $l>h$인 경우, $1-\delta$ 이상의 확률로 아래 부등식에 의해 bound 된다고 합니다.
+
+$$R_(w)\leq R_{emp}(w)+\sqrt{\frac{h(ln({2l \over h})+1)-ln({\delta \over 4})}{l}}$$
+
+위 식에서 empirical risk를 제외한 부분을 보면, $h$가 커질 때, $h(ln({2l \over h})+1)$도 커지므로 우리가 추정하고자 하는 함수 $f$가 포함된 집합의 VC dimension이 커지면 해당하는 제곱근 항 또한 커진다는 것을 알 수 있습니다. 반대로 $l$, 즉 sample 수가 많아지는 경우에는 제곱근항은 줄어든다는 것을 알 수 있죠. 이를 조금 더 직관적으로 보면 결국 모델의 complexity, capcity, VC dimension이 크면 일반화 성능이 떨어질 가능성이 커지고, 반대로 표본의 수가 많아지면 일반화 성능이 올라갈 가능성이 커진다는 것이죠. 그리고 당연히 empirical error, 즉 training error가 크면 일반화 성능이 낮을 가능성이 큰 것이고요. 
+
+더불어 Vapnik 선생님이 증명하신 바에 따르면, $l/h$가 크면, 즉 모델의 복잡도에 비해 sample이 충분히 크면 결국 위 부등식의 우변은 empirical risk에 근사하게 됩니다. 때문에 이러한 상황에서는 empirical risk를 minimization하는 것에만 신경써도 일반화 성능이 커질 가능성이 여전히 높을 수 있습니다. 이러한 접근법을 empirical risk minimization이라고 합니다. 말은 어렵지만 결국 그냥 training에만 신경쓰고 overfitting은 신경 안쓰겠다는 소리인거죠. 이런 알고리즘이 있나 싶긴하지만 사실 대부분의 알고리즘이 이러합니다. 엄밀히 말하자면 $l/h$가 큰지 안큰지 신경안쓰고 그냥 학습성능 최대화에 신경을 쓰는 경우가 많습니다. 우리가 흔히 알고있는 logistic regression, decision tree, neural network 계열의 알고리즘들이 사실 학습 성능의 최대화를 하도록 설계되어있고, 때문에 과적합 방지를 위해 regularization이나 dropout, early stopping 등의 다양한 방법을 활용하는 것입니다. 
+
+다시 수식으로 돌아와서, $l/h$가 작으면 
+
+
+
 ---
 
 ## Concepts of Support Vector Machine(SVM)
+
 
 ---
 
