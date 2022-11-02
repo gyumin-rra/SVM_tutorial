@@ -1,7 +1,7 @@
 # SVM tutorial
 a simple tutorial for support vector machine
 
-이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 support vector machine에 대한 기본적인 아이디어와 증명을 다루고 이를 기반으로 support vector machine을 다른 모듈의 구현체없이 직접 구현해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
+이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 여러 support vector machine에 대한 배경이론 제시, support vector machine의 개념 설명, 그리고 이를 기반으로 support vector machine을 다른 모듈의 구현체없이 직접 구현해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
 
 ## 목차
 1. [Theoretical Background](#theoretical-background)
@@ -67,14 +67,12 @@ $$R_(w)\leq R_{emp}(w)+\sqrt{\frac{h(ln({2l \over h})+1)-ln({\delta \over 4})}{l
 
 더불어 Vapnik 선생님이 증명하신 바에 따르면, $l/h$가 크면, 즉 모델의 복잡도에 비해 sample이 충분히 크면 결국 위 부등식의 우변은 empirical risk에 근사하게 됩니다. 때문에 이러한 상황에서는 empirical risk를 minimization하는 것에만 신경써도 일반화 성능이 커질 가능성이 여전히 높을 수 있습니다. 이러한 접근법을 empirical risk minimization이라고 합니다. 말은 어렵지만 결국 그냥 training에만 신경쓰고 overfitting은 신경 안쓰겠다는 소리인거죠. 이런 알고리즘이 있나 싶긴하지만 사실 대부분의 알고리즘이 이러합니다. 엄밀히 말하자면 $l/h$가 큰지 안큰지 신경안쓰고 그냥 학습성능 최대화에 신경을 쓰는 경우가 많습니다. 우리가 흔히 알고있는 logistic regression, decision tree, neural network 계열의 알고리즘들이 사실 학습 성능의 최대화를 하도록 설계되어있고, 때문에 과적합 방지를 위해 regularization이나 dropout, early stopping 등의 다양한 방법을 활용하는 것입니다. 
 
-다시 수식으로 돌아와서, $l/h$가 작으면 
-
-
+반대로 모델의 복잡도가 크거나 표본이 작은 경우($l/h$가 작은 경우) 모델의 복잡도가 커지면 일반화 성능이 낮아질 수 있기 때문에 모델 복잡도를 어느정도 제한하도록 함으로써 최적의 일반화 성능을 가지는 모델을 찾아내려 하는데, 이러한 접근법이 바로 structural risk minimization인 것입니다. 그리고 앞서 제시한 바와 같이 많은 모델들은 기본적으로 ERM만 수행하지만 여기에 regularization 등의 테크닉을 적용하여 결과적으로 structural risk minimization을 수행하는 방향으로 머신러닝 모델링이 진행되는 경우가 굉장히 많습니다. 그리고 어떤 머신러닝 알고리즘의 경우에는 애초에 학습과정 자체에 structural risk minimization이 포함된 것도 있습니다. 바로 support vector machine이 그러한 예시입니다. 이제부터 support vector machine의 개념, 그리고 이게 structural risk minimization이랑은 무슨 상관인지도 함께 살펴보겠습니다.
 
 ---
 
 ## Concepts of Support Vector Machine(SVM)
-
+SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 분류하는 선형의(linear) 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 
 
 ---
 
