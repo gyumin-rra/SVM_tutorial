@@ -51,7 +51,9 @@ VC dimension을 조금 더 직관적인 개념으로 생각해보면 이는 함�
 위 그래프에서 confidence는 모델의 complexity에 따른 최대 complexity이고(uppper bound) empirical risk는 training error 입니다. 그리고 test error의 기댓값이 바로 expected risk이고 도표의 . 결국 위 도표에 따르면 test error의 기댓값은 최대 complexity와 training error 모두 적절한 수준인 경우에 최소화 할 수 있다는 것을 알 수 있습니다. 이러한 관계를 현대의 우리는 여러 사례를 통해 어느정도 이미 직관적으로 짐작하고 있지만, 이 도표가 만들어졌을즈음의 시기에는 위 도표와 같은 관계를 수학적으로 *증명*하기 위해 많은 노력을 기울였습니다. 해당 증명을 모두 다루지는 않겠지만, 중요한 부분만 간단하게 살펴보겠습니다. 
 
 #### expected risk(test error) upper bound
-데이터셋의 객체 $(\vec{x_i}, y_i)$들이 probability density function $P(\vec{x}, y)$에 의해 생성되었다고 합시다. $x$가 n차원의 벡터이고, $y=1or-1$이라 할 때, 둘을 매핑하는 함수 $f:R^n \rightarrow \lbrace -1, +1 \rbrace$
+데이터셋의 객체 $(\vec{x_i}, y_i)$들이 probability density function $P(\vec{x}, y)$에 의해 생성되었다고 합시다. 그리고 $x$가 n차원의 벡터이고, $y=1or-1$이라 할 때, 둘을 매핑하는 함수 $f:R^n \rightarrow \lbrace -1, +1 \rbrace$를 우리가 찾고자 하는 모델이라고 합시다. 함수 $f$의 parameter를 $w$라 하고, 실제 y와 f에 의해 매핑된 값의 차이를 input으로 하는 loss function을 $L$이라 하겠습니다. 그러면 우선 함수 $f$의 parameter $w$를 찾아내는 작업이 곧 training일 것입니다. 그리고 training이 되어 찾아낸 $w$에 대한 test error의 기댓값을 $R$이라 하면 아래와 같이 나타 낼 수 있겠습니다.
+
+$$R(w) = \int L(y, f(x, w))dP(x,y)$$
 
 
 ---
