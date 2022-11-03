@@ -118,9 +118,9 @@ Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot
 ### SVM for Non-Linearly Non-Seperable Case(nonlinear soft margin)
 지금까지 살펴본 SVM은 선형분류경계면을 찾아내는 알고리즘이었습니다. 그러나 이번에 살펴볼 SVM은 nonlinear soft margin SVM으로, 이름에서 보시다시피 "비"선형 분류경계면을 찾아내는 알고리즘입니다. 새삼스래 혼란스럽네요. 분명 SVM은 처음에 선형분류경계면을 찾는다고 했었는데, 이제 와서 갑자기 비선형 분류경계면을 찾는다니...... 조금 더 혼란스러우실 만한 말씀을 드리자면, 지금 설명 드리는 SVM 알고리즘도 선형분류경계면을 찾는 알고리즘입니다. 그러니까 선형분류경계면을 찾으면서 비선형 분류경계면을 찾는 것이죠. 이 모순은 분류경계면을 찾는 차원을 명시해서 설명드리면 해결됩니다. 이렇게 말이죠.
 
-**Nonlinear soft margin SVM은 고차원($D'$차원)으로 데이터를 mapping한 후 고차원 공간에서 soft margin SVM을 수행하여 선형 분류경계면을 찾은 뒤, 이를 다시 원래의 저차원 공간($D$차원)으로 mapping하여 비선형분류경계면을 나타내는 알고리즘입니다.** 
+**Nonlinear soft margin SVM은 고차원(D차원)으로 데이터를 mapping한 후 고차원 공간에서 soft margin SVM을 수행하여 선형 분류경계면을 찾은 뒤, 이를 다시 원래의 저차원 공간(d차원)으로 mapping하여 비선형분류경계면을 나타내는 알고리즘입니다.** 아래의 예시를 보시죠.
 
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199700189-857e235b-3553-498e-b5f7-07d07b68db17.png" height="400px" width="1000px"></p>
 
 이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
 
