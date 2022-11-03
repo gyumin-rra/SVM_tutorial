@@ -253,7 +253,7 @@ plt.figure(figsize=(10,10))
 plt.title('nonlinear mapping by sklearn_TSNE')
 plt.scatter(tsne_data.z1, tsne_data.z2, c=data.output, alpha=0.7)
 ```
-![image](https://user-images.githubusercontent.com/112034941/199730525-ca5f53a0-326a-41ec-9b73-97daeb645081.png)
+![image](https://user-images.githubusercontent.com/112034941/199740145-e6a49a5a-bedc-4ad2-92ef-5da351d32b9f.png)
 
 결과를 보면 매우 비선형적으로 mapping되어 있음을 확인할 수 있습니다. 이를 1.에서와 동일하게 linear soft margin SVM과 RBF kernel SVM을 활용하여 성능을 비교해보겠습니다.
 ```python
@@ -300,17 +300,57 @@ print(eval_data.mean())
 결과를 보면 training dataset에서의 성능은 확실히 RBF kernel을 사용한 모델에서 더 뛰어남을 알 수 있습니다. 다만 test set에서의 성능은 서로 유사한데요, training set에서의 성능과 일반화 성능이 서로 trade off 관계에 있으며 이는 모델의 복잡도에 의해 조절될 수 있음을 상기해보면 아마도 우리 모델은 복잡도가 높아 empirical error는 낮아졌으나 test error는 조금 높아진 상황이라고 추측할 수 있을 것입니다. 따라서 모델 성능을 높이기 위한 해결책으로써 모델의 복잡도를 낮추기 위해 C를 10으로 감소시켰습니다. 결과는 아래와 같습니다.
 ![image](https://user-images.githubusercontent.com/112034941/199735199-0843e2eb-e375-4fef-9b22-678a81070601.png)
 
-1. Ealry Exaggeration: 조금 더 빠른 해의 수렴을 위해 $p_{ij}$ 행렬에 특정 수를 곱하고, 일정 iteration을 넘어가면 다시 원래 행렬로 변환하여 gradient를 계산합니다.
-2. [Barnes-hut SNE](https://arxiv.org/pdf/1301.3342.pdf): metric trees 및 barnes-hut algorithm을 $p_{ij}$ 행렬을 근사하고 그래디언트도 근사하여 계산복잡도를 줄입니다. 본래 계산복잡도는 $O(N^2)$이지만, 이 방법론에서의 해당 과정의 계산복잡도는 $O(NlogN)$이라고 합니다.
-3. Numerical Stability: $p_{ij}$ 행렬과 $q_{ij}$ 행렬에서 너무 값이 작아지는 것을 방지하고자 $1e-12$(다른 값도 가능합니다.) 보다 낮은 값이 들어있는 경우 이를 $1e-12$로 대체합니다. 
-4. Using PCA: PCA를 통해 먼저 차원을 축소한 후 이를 가지고 t-SNE를 사용합니다. 
-5. 기타: 파이썬이 아니라 실제로는 c기반으로 계산한 후 이를 파이썬으로 wrapping하여 계산 속도 자체롤 높입니다.
+결과를 보면 성공적으로 일반화 성능이 상승하였음을 확인할 수 있습니다. 마지막 실험으로 넘어가겠습니다.
 
-위와 같은 요소가 최근 사용되는 t-SNE 구현체와 이 repository에서의 구현체와의 차이점입니다. 여기에 적절한 하이퍼파라미터의 설정 또한 성능을 높이기 위해 필요한 점입니다. 
+###  비선형적 mapping 상황에서의 RBF kernel SVM의 gamma와 C에 따른 분류 경계면 비교
+앞서 만들어낸 t-SNE에 의한 비선형적 mapping data를 RBF kernel SVM을 이용하여 분류해보고, $\gamma$(gamma)와 C를 조절하여 그 변화를 확인해보겠습니다. 우선 분류경계면을 그리기 위한 함수는 아래와 같습니다. [이 링크](https://ekfkdlxm.tistory.com/41)의 코드를 참조하였습니다.
+```python
+def svm_plot(tsne_data, model):
+    import numpy as np
+    import matplotlib as plt
+    plt.figure(figsize=(15,15))
+    plt.scatter(tsne_data.z1, tsne_data.z2, c=tsne_data.output, s=30, cmap=plt.cm.Paired)
+    ax = plt.gca()
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    xx = np.linspace(xlim[0], xlim[1], 30)
+    yy = np.linspace(ylim[0], ylim[1], 30)
+    YY, XX = np.meshgrid(yy, xx)# -1 margin, decision boundary
+    xy = np.vstack([XX.ravel(), YY.ravel()]).T
+    Z = model.decision_function(xy).reshape(XX.shape) # +1 margin
+
+    #margins,decision boundary
+    ax.contour(XX, YY, Z, colors=['b','r','b'], levels=[-1,0,1], alpha=0.5, linestyles=['--', '-', '--'])
+
+    plt.show()
+```
+
+그리고 실험은 다음과 같은 코드에서 C와 $\gamma$를 변경해가며 진행하였습니다. 실험한 C는 1, 10, 50, 100, 1000, 10000이고 C를 10으로 고정시킨 상태에서 실험한 $\gamma$는 0.0001, 0.001, 0.003, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 1입니다. 
+```python
+C = 10
+gamma = 0.0001
+model = SVC(kernel='rbf', C=C, gamma=gamma)
+model.fit(tsne_data[['z1', 'z2']], tsne_data.output)
+
+svm_plot(tsne_data, model)
+```
+우선 C의 변화에 따른 분류경계면의 변화는 아래와 같습니다. 붉은 실선이 분류 경계면, 푸른 점선이 margin의 경계면입니다. 
+![image](https://user-images.githubusercontent.com/112034941/199748979-1aeda47e-3215-402c-a081-a45cca481cdf.png)
+
+앞서 개념에서 C가 증가하면 결국 margin을 줄이게 된다는 것을 언급한 적이 있습니다. 그리고 실제 결과를 보면 C의 증가에 따라 실제로 margin이 줄어든 형태의 분류경계면이 나타나고 있음을 알 수 있습니다. 그리고 더불어 비선형성 또한 높아지고 있는 것을 알 수 있습니다.
+
+다음은 $\gamma$의 변화에 따른 분류경계면의 변화입니다. 
+![image](https://user-images.githubusercontent.com/112034941/199751424-860208e2-fe00-45a2-85a6-fc07893cb4a5.png)
+
+앞서 개념 설명에서와 같이 $\gamma$가 증가하면 비선형성이 증가한다는 것을 언급한 적이 있습니다. 그리고 실제 결과를 보면 $\gamma$의 증가에 따라 비선형적인 분류경계면의 양상이 나타나고 있음을 확인할 수 있습니다. $\gamma$와 C의 영향력을 그림을 통해 비교해보자면 비슷한 비율로 증감했을때, $\gamma$의 영향이 C의 영향에 비해 매우 큰 것으로 보입니다 왜냐하면 C를 1에서 10000으로 증가시켰을 때보다 $\gamma$를 0.0001에서 1로 증가시켰을 때 훨씬 극단적인 변화가 나타나기 때문입니다. 이러한 현상의 이유를 생각해보자면 앞서 설명한적은 없으나 우리가 kernel SVM의 최적화 문제를 풀다보면 아래의 실제 식과 같아짐을 확인할 수 있습니다. 
+![image](https://user-images.githubusercontent.com/112034941/199753273-acaf7d44-02e0-4deb-8fa7-d016155d646e.png)
+
+C가 커지면 라그랑지안 승수의 범위가 늘어나는 것에 그치는 반면 $\gamma$가 커지면 목적함수에서의 음수항을 거의 0으로 만들어주는 역할을 하게 되는데, 직관적으로 생각해보았을 때 $\gamma$의 변화에 라그랑지안 승수가 더 민감하게 반응할 것이며, 결국 이 라그랑지안 승수가 support vector와 연관이 있고 support vector"만이" 분류경계면 형성에 기여한다는 점을 고려하면 위와 같은 실험결과는 자연스러운 결과로 해석됩니다.
 
 ---
 
 ## Conclusion
-지금까지 t-SNE의 개념, 구현, 기존 모듈과의 비교 등을 진행해보았습니다. t-SNE의 이론적 배경 분석부터 가장 기본적인 형태의 코드 구현까지 이어지는 과정이 저에게는 쉽지 않았던 만큼 t-SNE에 대한 이해가 조금이나마 깊어질 수 있었는데, 여기까지 읽으신 분들에게도 그랬으면 좋겠습니다. 실험 결과의 경우에는 t-SNE_tutorial.ipynb에 있으며, 혹여나 이 markdown에 구현된 raw t-SNE를 진행하고 싶으신 분들을 위해 raw_tsne.py 파일과 실습을 진행한 데이터셋은 올려두었습니다. 감사합니다.
+지금까지 SVM의 이론적 배경, 개념, 그리고 이 이론적 내용을 증명하기 위한 실험 진행과정과 결과들을 살펴보았습니다. 다양한 개념을 살펴보고 이를 실제로 실험해보는 과정은 저에게 있어서는 매우 도움이 되는 과정이었는데, 이 tutorial을 보시는 분들에게도 그러했으면 좋겠습니다. 실제 실험의 진행 코드는 SVM_tutorial.ipynb에 있으며, 제가 참고한 자료와 실습을 진행한 데이터셋 heart.csv은 올려두었습니다. 감사합니다.
 
 
