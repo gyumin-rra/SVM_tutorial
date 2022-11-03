@@ -213,9 +213,9 @@ from sklearn.svm import SVC
 # simple model: linear soft margin
 for i in range(5):
     fold_num = i
-    LSM_SVM = SVC(kernel='linear', C=1)
-    LSM_SVM.fit(trn_X[fold_num], trn_y[fold_num])
-    eval_data = evaluation(fold_num, LSM_SVM, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+    model = SVC(kernel='linear', C=1)
+    model.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, model, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
 
 eval_data.mean()
 print(100*abs(eval_data.mean()['trn_accuracy']-eval_data.mean()['tst_accuracy'])/eval_data.mean()['tst_accuracy'])
@@ -224,9 +224,9 @@ print(100*abs(eval_data.mean()['trn_f1']-eval_data.mean()['tst_f1'])/eval_data.m
 # complex model: nonlinear soft margin
 for i in range(5):
     fold_num = i
-    LSM_SVM = SVC(kernel='rbf', C=1000)
-    LSM_SVM.fit(trn_X[fold_num], trn_y[fold_num])
-    eval_data = evaluation(fold_num, LSM_SVM, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+    model = SVC(kernel='rbf', C=1000)
+    model.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, model, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
 
 eval_data.mean()
 print(100*abs(eval_data.mean()['trn_accuracy']-eval_data.mean()['tst_accuracy'])/eval_data.mean()['tst_accuracy'])
@@ -240,8 +240,65 @@ print(100*abs(eval_data.mean()['trn_f1']-eval_data.mean()['tst_f1'])/eval_data.m
 
 ### 비선형적 mapping 상황에서의 RBF kernel SVM과 그냥 linear soft margin SVM의 성능 비교
 우선 현재 실험하는 데이터셋을 t-SNE를 통해 비선형적으로 2차원에 mapping해보겠습니다. 실험 코드와 결과는 아래와 같습니다.
+```python
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import warnings 
+warnings.filterwarnings("ignore") # warning 무시
 
+tsne = TSNE(n_components=2, random_state = 1103)
+tsne_data = tsne.fit_transform(data[x_features])
+tsne_data = pd.DataFrame(tsne_data, columns=['z1', 'z2'])
+plt.figure(figsize=(10,10))
+plt.title('nonlinear mapping by sklearn_TSNE')
+plt.scatter(tsne_data.z1, tsne_data.z2, c=data.output, alpha=0.7)
+```
+![image](https://user-images.githubusercontent.com/112034941/199730525-ca5f53a0-326a-41ec-9b73-97daeb645081.png)
 
+결과를 보면 매우 비선형적으로 mapping되어 있음을 확인할 수 있습니다. 이를 1.에서와 동일하게 linear soft margin SVM과 RBF kernel SVM을 활용하여 성능을 비교해보겠습니다.
+```python
+tsne_data = pd.concat([tsne_data, data.output], axis=1)
+tsne_data.columns = ['z1', 'z2', 'output']
+kfold_idx_set = kfold(data=tsne_data, fold=5, seed=1103)
+
+trn_X = []
+trn_y = []
+tst_X = []
+tst_y = []
+index_set = data.index.tolist()
+
+for i in range(5):
+    total_idx = set(index_set)
+    trn_X.append(tsne_data.loc[list(total_idx-set(kfold_idx_set[i]))][['z1', 'z2']])
+    trn_y.append(tsne_data.loc[list(total_idx-set(kfold_idx_set[i]))]['output'])
+    tst_X.append(tsne_data.loc[kfold_idx_set[i]][['z1', 'z2']])
+    tst_y.append(tsne_data.loc[kfold_idx_set[i]]['output'])
+
+eval_data = pd.DataFrame([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], columns=['trn_accuracy', 'trn_f1', 'tst_accuracy', 'tst_f1'])
+
+# simple model: linear soft margin
+for i in range(5):
+    fold_num = i
+    model = SVC(kernel='linear', C=1)
+    model.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, model, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+
+print(eval_data.mean())
+
+# complex model: nonlinear soft margin
+for i in range(5):
+    fold_num = i
+    model = SVC(kernel='rbf', C=1000)
+    model.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, model, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+    
+print(eval_data.mean())
+
+```
+![image](https://user-images.githubusercontent.com/112034941/199733110-2fc4f8a4-e983-4e36-9c9f-f5361fcb5229.png)
+
+결과를 보면 training dataset에서의 성능은 확실히 RBF kernel을 사용한 모델에서 더 뛰어남을 알 수 있습니다. 다만 test set에서의 성능은 서로 유사한데요, training set에서의 성능과 일반화 성능이 서로 trade off 관계에 있으며 이는 모델의 복잡도에 의해 조절될 수 있음을 상기해보면 아마도 우리 모델은 복잡도가 높아 empirical error는 낮아졌으나 test error는 조금 높아진 상황이라고 추측할 수 있을 것입니다. 따라서 모델 성능을 높이기 위한 해결책으로써 모델의 복잡도를 낮추기 위해 C를 10으로 감소시켰습니다. 결과는 아래와 같습니다.
+![image](https://user-images.githubusercontent.com/112034941/199735199-0843e2eb-e375-4fef-9b22-678a81070601.png)
 
 1. Ealry Exaggeration: 조금 더 빠른 해의 수렴을 위해 $p_{ij}$ 행렬에 특정 수를 곱하고, 일정 iteration을 넘어가면 다시 원래 행렬로 변환하여 gradient를 계산합니다.
 2. [Barnes-hut SNE](https://arxiv.org/pdf/1301.3342.pdf): metric trees 및 barnes-hut algorithm을 $p_{ij}$ 행렬을 근사하고 그래디언트도 근사하여 계산복잡도를 줄입니다. 본래 계산복잡도는 $O(N^2)$이지만, 이 방법론에서의 해당 과정의 계산복잡도는 $O(NlogN)$이라고 합니다.
