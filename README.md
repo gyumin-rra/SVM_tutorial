@@ -67,14 +67,23 @@ $$R_(w)\leq R_{emp}(w)+\sqrt{\frac{h(ln({2l \over h})+1)-ln({\delta \over 4})}{l
 
 더불어 Vapnik 선생님이 증명하신 바에 따르면, $l/h$가 크면, 즉 모델의 복잡도에 비해 sample이 충분히 크면 결국 위 부등식의 우변은 empirical risk에 근사하게 됩니다. 때문에 이러한 상황에서는 empirical risk를 minimization하는 것에만 신경써도 일반화 성능이 커질 가능성이 여전히 높을 수 있습니다. 이러한 접근법을 empirical risk minimization이라고 합니다. 말은 어렵지만 결국 그냥 training에만 신경쓰고 overfitting은 신경 안쓰겠다는 소리인거죠. 이런 알고리즘이 있나 싶긴하지만 사실 대부분의 알고리즘이 이러합니다. 엄밀히 말하자면 $l/h$가 큰지 안큰지 신경안쓰고 그냥 학습성능 최대화에 신경을 쓰는 경우가 많습니다. 우리가 흔히 알고있는 logistic regression, decision tree, neural network 계열의 알고리즘들이 사실 학습 성능의 최대화를 하도록 설계되어있고, 때문에 과적합 방지를 위해 regularization이나 dropout, early stopping 등의 다양한 방법을 활용하는 것입니다. 
 
-반대로 모델의 복잡도가 크거나 표본이 작은 경우($l/h$가 작은 경우) 모델의 복잡도가 커지면 일반화 성능이 낮아질 수 있기 때문에 모델 복잡도를 어느정도 제한하도록 함으로써 최적의 일반화 성능을 가지는 모델을 찾아내려 하는데, 이러한 접근법이 바로 structural risk minimization인 것입니다. 그리고 앞서 제시한 바와 같이 많은 모델들은 기본적으로 ERM만 수행하지만 여기에 regularization 등의 테크닉을 적용하여 결과적으로 structural risk minimization을 수행하는 방향으로 머신러닝 모델링이 진행되는 경우가 굉장히 많습니다. 그리고 어떤 머신러닝 알고리즘의 경우에는 애초에 학습과정 자체에 structural risk minimization이 포함된 것도 있습니다. 바로 support vector machine이 그러한 예시입니다. 이제부터 support vector machine의 개념, 그리고 이게 structural risk minimization이랑은 무슨 상관인지도 함께 살펴보겠습니다.
+반대로 모델의 복잡도가 크거나 표본이 작은 경우($l/h$가 작은 경우) 모델의 복잡도가 커지면 일반화 성능이 낮아질 수 있기 때문에 모델 복잡도를 어느정도 제한하도록 함으로써 최적의 일반화 성능을 가지는 모델을 찾아내려 하는데, 이러한 접근법이 바로 structural risk minimization인 것입니다. 그리고 앞서 제시한 바와 같이 많은 모델들은 기본적으로 ERM만 수행하지만 여기에 regularization 등의 테크닉을 적용하여 결과적으로 structural risk minimization을 수행하는 방향으로 머신러닝 모델링이 진행되는 경우가 굉장히 많습니다. 그리고 어떤 머신러닝 알고리즘의 경우에는 애초에 학습과정 자체에 structural risk minimization이 포함된 것도 있습니다. 바로 support vector machine이 그러한 예시입니다. 
+
+추후 다시 설명하겠지만, SVM은 margin을 최대화하는 초평면을 찾는 알고리즘입니다. 이때 margin을 $p$, SVM이 찾아내는 hyperplane의 VC dimension을 $h$, 데이터셋을 모두 포함하는 최소 초구(hypersphere)의 반지름을 $R$, 그리고 데이터셋의 차원 $D$에 대해 아래와 같은 관계가 성립합니다.
+
+$$h \le min (\lceil R^2/p^2 \rceil, D)+1$$
+
+보시다시피 결국 margin $p$가 증가하면 $min (\lceil R^2/p^2 \rceil, D)$이 $\lceil R^2/p^2 \rceil$와 같고 동시에 해당 값이 줄어들것이고, 이는 결국 $h$가 감소하는 결과를 가져오며, SRM의 수식에 따르면 $h$의 감소는 곧 expected risk, 즉 test error가 줄어들 가능성을 높이는 것입니다. empirical risk만을 줄이는 것이 아니라 전체적인 capcity 및 empirical risk를 모두 고려하는 것이죠. 따라서 SVM은 곧 SRM을 수행하는 알고리즘이라고 볼 수 있겠습니다.
+
+여기까지 SVM이 지향하는 바를 이해하기 위한 배경이론을 살펴보았습니다. 이제부터 support vector machine의 개념을 살펴보겠습니다.
 
 ---
 
 ## Concepts of Support Vector Machine(SVM)
 SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 +1과 -1로(사실 다른 수여도 괜찮습니다.)이진분류하는 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 모든 종류의 초평면은 $w \cdot x + b =0$ 로 나타낼 수 있으니까($x$는 미지수 벡터 $w$는 가중치 벡터입니다.) SVM은 결국 $w \cdot x + b =0$에서 $w$랑 $b$를 찾아내는 것인 셈입니다. 그럼 그것을 어떻게 찾아낼까요? 우선 가장 기본적인 형태의 SVM의 경우를 살펴보겠습니다.
 
-데이터를 분류하는 초평면 $w \cdot x + b =0$가 있다고 할 때, 이것에 평행하면서 동일한 간격으로 떨어진 두 개의 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$을 생각해봅시다. 그리고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 $w \cdot x + b =0$를 적절히 조절할 수도 있겠죠. 그림으로 나타내면 아래와 같은 상황이 될 것입니다. 
+### SVM for Linearly Seperable Case
+가장 기본적인 형태의 SVM의 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있는 상황에서의 SVM이죠. 일단 데이터를 분류하는 초평면 $w \cdot x + b =0$가 있다고 할 때, 이것에 평행하면서 동일한 간격으로 떨어진 두 개의 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$을 생각해봅시다. 그리고 만약 데이터의 이진분류가 초평면에 의해 완벽하게 가능하다면, $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 $w \cdot x + b =0$를 적절히 조절할 수도 있겠죠. 그림으로 나타내면 아래와 같은 상황이 될 것입니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199650392-215e2bd5-7b92-4fd0-b02d-ff2a44acbb65.png" height="450px" width="600px"></p>
 
 위와 같은 상황에서, SVM에서 찾고자 하는 초평면은 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 "간격"을 최대화하는 $w \cdot x + b =0$입니다. 이 간격을 margin이라고 부릅니다. 그러면 이 간격을 최대화하기 위해서는 무엇을 해야할까요? 초평면 $w \cdot x + b =0$를 찾아내는 과정은 결국 $w$와 $b$를 찾아내는 과정인데, margin은 이 중 $w$에만 관련이 있습니다. 왜 그러한지 한번 직접 margin을 구해보면서 알아보겠습니다.
@@ -89,7 +98,10 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 
 **따라서, margin은 $w$의 함수입니다!**
 
-정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 여기까지가 가장 기본적인 형태의 SVM의 개념이었습니다. 이러한 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있다는 것입니다. 당연히, 그렇지 못한 case도 존재합니다. 그러한 경우에는 앞서 설정한 기존 조건에 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 조건을 변형하고 $2/|w|$가 아닌 $2/|w|+C \sum \xi$를 최대화하게 됩니다. 그러한 케이스의 그림은 아래와 같이 나타낼 수 있습니다. 
+정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 다만 하나만 첨언하자면 실제로는 $2/|w|$의 분모에 제곱근이 포함되어 있기 때문에, 이를 동일한 의미를 가지도록 $|w|^2/2$를 최"소"화하도록 학습을 진행합니다. 이는 결국 $|w|^2/2$을 목적함수로 하고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 것을 제약조건으로 가지는 최적화 문제로 formulation 할 수 있습니다.
+
+### SVM for Linearly Non-Seperable Case
+지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 무엇이 다를까요? 그러한 경우에는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
 
 
