@@ -144,64 +144,70 @@ Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal
 | pandas     | 1.4.3   |
 | sklearn    | 1.1.1   |
 
-사용할 데이터셋은 kaggle의 [heart attack dataset](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset)입니다. 파일이 두 개가 있는데, haert.csv를 사용했습니다. 
+사용할 데이터셋은 kaggle의 [heart attack dataset](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset)입니다. 파일이 두 개가 있는데, haert.csv를 사용했습니다. 그리고 SVM의 구현을 위해 사용해볼 모듈은 sklearn.svm의 SVC 입니다. 실험해볼 내용은 총 3가지로, 아래와 같습니다.
+1. $l/h$, 즉 표본의 개수에 비한 함수의 복잡도에 따른 test set에서의 error 및 training error와의 비교.
+2. 비선형적 mapping 상황에서의 RBF kernel SVM과 그냥 linear soft margin SVM의 성능 비교.
+3. 비선형적 mapping 상황에서의 RBF kernel SVM의 gamma와 C에 따른 분류 경계면 비교.
 
-파이썬에는 SVM을 구현한 다양한 모듈이 많습니다. 그 중에서 사용해볼 모듈은 sklearn.svm의 SVC 입니다.
-
-이를 이용하여 [MNIST](http://yann.lecun.com/exdb/mnist/)를 기반으로 실제로 tSNE를 진행한 결과는 아래와 같습니다.(pandas(v1.19.2)와 matplotlib(v1.19.2)을 활용하였습니다.)
+우선 1.을 시험해보기 위해 다음과 같이 k-fold 함수와 evaluation 함수를 구현하였습니다.
+1. k-fold 함수
 ```python
-import gzip
-import numpy as np
-from raw_tsne import raw_TSNE
-with gzip.open('train-images-idx3-ubyte.gz', 'rb') as f:
-    x_train = np.frombuffer(f.read(), np.uint8, offset=16).reshape(-1, 28*28)
-with gzip.open('train-labels-idx1-ubyte.gz', 'rb') as f:
-    y_train = np.frombuffer(f.read(), np.uint8, offset=8)
+def kfold(data, fold, seed):
+    import random
+    idx_set_1 = data.loc[data.output== 1].index.tolist()
+    idx_set_0 = data.loc[data.output == 0].index.tolist()
+    size_1 = round(len(idx_set_1)/fold)
+    size_0 = round(len(idx_set_0)/fold)
+    folded_idx_set = []
+    for i in range(fold):
+        if (i == fold-1):
+            folded_idx_set.append(idx_set_1+idx_set_0)
+        else:
+            random.seed(seed)   
+            folded_idx_set.append(list(random.sample(idx_set_1, size_1))+list(random.sample(idx_set_0, size_0)))
+            idx_set_1 = list(set(idx_set_1)-set(folded_idx_set[len(folded_idx_set)-1]))
+            idx_set_0 = list(set(idx_set_0)-set(folded_idx_set[len(folded_idx_set)-1]))
+    
+    return folded_idx_set
 
-X = x_train[0:1000]
-label = y_train[0:1000]
+kfold_idx_set = kfold(data=data, fold=5, seed=1103)
 
-tsne_data = raw_TSNE(X, 2, 40, 1000, 200, 0.5, 1013)
+trn_X = []
+trn_y = []
+tst_X = []
+tst_y = []
+index_set = data.index.tolist()
 
-import pandas as pd
-import matplotlib.pyplot as plt
-tsne_data = pd.DataFrame(tsne_data, columns=['z1', 'z2'])
-plt.figure(figsize=(20,20))
-plt.title('MNIST, raw_t-sne')
-plt.scatter(tsne_data.z1, tsne_data.z2, c=label, alpha=0.7, cmap=plt.cm.tab10)
+for i in range(5):
+    total_idx = set(index_set)
+    trn_X.append(data.loc[list(total_idx-set(kfold_idx_set[i]))][x_features])
+    trn_y.append(data.loc[list(total_idx-set(kfold_idx_set[i]))]['output'])
+    tst_X.append(data.loc[kfold_idx_set[i]][x_features])
+    tst_y.append(data.loc[kfold_idx_set[i]]['output'])
 ```
-![image](https://user-images.githubusercontent.com/112034941/195624702-1b39c3c0-e505-4303-8dc5-59abc4868272.png)
-![image](https://user-images.githubusercontent.com/112034941/195624783-1bca7146-7ece-49dd-8115-3965dd28a5ad.png)
 
-
-결과를 보면, manifold 학습이 잘 되지 않았고 모든 MNIST trainset을 학습한 것이 아니라 일부만 학습한 것임에도 오랜 시간(약 247초)이 걸림을 알 수 있습니다. 같은 결과를 sklearn의 TSNE를 통해 구현한 결과는 아래와 같습니다. 
+2. 성능평가를 위한 evaluation 함수
 ```python
-import gzip
-import numpy as np
-from raw_tsne import raw_TSNE
-with gzip.open('train-images-idx3-ubyte.gz', 'rb') as f:
-    x_train = np.frombuffer(f.read(), np.uint8, offset=16).reshape(-1, 28*28)
-with gzip.open('train-labels-idx1-ubyte.gz', 'rb') as f:
-    y_train = np.frombuffer(f.read(), np.uint8, offset=8)
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score
+def evaluation(fold_num, model, tst_X, tst_y, data):
+    y_pred = model.predict(tst_X)
+    print('AUROC: '+str(roc_auc_score(tst_y, y_pred)))
+    data.loc[fold_num, 'AUROC'] = roc_auc_score(tst_y, y_pred)
+    print('Confusion Matrix')
+    print(confusion_matrix(tst_y, y_pred))
+    tn, fp, fn, tp = confusion_matrix(tst_y, y_pred).ravel()
+    print('TPR(TP/AP), sensitivity, recall: ' + str(tp/(fn+tp)))
+    data.loc[fold_num, 'TPR'] = tp/(fn+tp)
+    print('TNR(TN/AN), specificity: ' + str(tn/(fp+tn)))
+    data.loc[fold_num, 'TNR'] = tn/(fp+tn)
+    print('precision(TP/PP): ' + str(tp/(fp+tp)))
+    data.loc[fold_num, 'precision'] = tp/(fp+tp)
+    print('f1 score: ' + str(2*tp/(fp+2*tp+fn)))
+    data.loc[fold_num, 'f1'] = 2*tp/(fp+2*tp+fn)
 
-X = x_train[0:1000]
-label = y_train[0:1000]
-
-from sklearn.manifold import TSNE
-import time
-import warnings 
-warnings.filterwarnings("ignore") # warning 무시
-tsne = TSNE(n_components=2, random_state = 1013)
-st = time.time()
-tsne_data = tsne.fit_transform(X)
-et = time.time()
-tsne_data = pd.DataFrame(tsne_data, columns=['z1', 'z2'])
-print(et-st)
-plt.figure(figsize=(20,20))
-plt.title('MNIST, sklearn_TSNE')
-plt.scatter(tsne_data.z1, tsne_data.z2, c=label, alpha=0.7, cmap=plt.cm.tab10)
+    return data
 ```
-![image](https://user-images.githubusercontent.com/112034941/195560135-053c61b8-72a9-4c6a-9666-fcd1e4865c5a.png)
 
 결과를 보면 실제 결과와 시간과 성능 면에서 심한 차이가 있음을 알 수 있습니다. 하이퍼 파라미터의 차이도 그 이유 중 하나겠지만, 그보다 중요한 것은 현재 구현된 t-SNE 코드는 실제 t-SNE논문의 'simple version of t-distributed Stochastic Neighbor Embedding'의 구현체라는 점입니다. 편의를 위해 이 t-SNE 구현체를 raw t-SNE라고 하면, 실제로 요즈음 쓰이는 t-SNE에는 raw t-SNE에 몇 가지 내용이 추가됩니다. 
 
