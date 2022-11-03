@@ -82,7 +82,7 @@ $$h \le min (\lceil R^2/p^2 \rceil, D)+1$$
 ## Concepts of Support Vector Machine(SVM)
 SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 +1과 -1로(사실 다른 수여도 괜찮습니다.)이진분류하는 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 모든 종류의 초평면은 $w \cdot x + b =0$ 로 나타낼 수 있으니까($x$는 미지수 벡터 $w$는 가중치 벡터입니다.) SVM은 결국 $w \cdot x + b =0$에서 $w$랑 $b$를 찾아내는 것인 셈입니다. 그럼 그것을 어떻게 찾아낼까요? 우선 가장 기본적인 형태의 SVM의 경우를 살펴보겠습니다.
 
-### SVM for Linearly Seperable Case
+### SVM for Linearly Seperable Case(hard margin)
 가장 기본적인 형태의 SVM의 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있는 상황에서의 SVM이죠. 일단 데이터를 분류하는 초평면 $w \cdot x + b =0$가 있다고 할 때, 이것에 평행하면서 동일한 간격으로 떨어진 두 개의 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$을 생각해봅시다. 그리고 만약 데이터의 이진분류가 초평면에 의해 완벽하게 가능하다면, $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 $w \cdot x + b =0$를 적절히 조절할 수도 있겠죠. 그림으로 나타내면 아래와 같은 상황이 될 것입니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199650392-215e2bd5-7b92-4fd0-b02d-ff2a44acbb65.png" height="450px" width="600px"></p>
 
@@ -100,7 +100,7 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 
 정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 다만 하나만 첨언하자면 실제로는 $2/|w|$의 분모에 제곱근이 포함되어 있기 때문에, 이를 동일한 의미를 가지도록 $|w|^2/2$를 최"소"화하도록 학습을 진행합니다. 이는 결국 $|w|^2/2$을 목적함수로 하고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 것을 제약조건으로 가지는 최적화 문제로 formulation 할 수 있습니다.
 
-### SVM for Linearly Non-Seperable Case
+### SVM for Linearly Non-Seperable Case(soft margin)
 지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 linearly non-separable case의 SVM 혹은 linear soft margin SVM이라고 합니다. 앞서 hard margin case와 soft margin case와는 무엇이 다를까요? soft margin case에서는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
 
@@ -109,10 +109,29 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되 $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 그 객체와 $w \cdot x + b = 1$ 사이의 거리를 $\xi$라 하여 $\xi$만큼의 penalty를 부과합니다.(때문에 영역내에 들어와 있는 객체들에는 penalty $\xi$가 0인 것으로 생각할 수 있을 것입니다) 이러한 제약조건은 결국 +1로 labeling된 객체가 $w \cdot x + b \ge 1-\xi$의 영역에 포함되어야 한다는 조건과 같게 됩니다. 그리고 같은 원리로 -1로 labeling 된 객체에 해당하는 제약조건은 $w \cdot x + b \le -1+\xi$가 되겠죠. 정리하면, soft margin SVM에서의 최적화 문제의 목적함수는 $|w|^2/2 + C \sum \xi$, 제약조건은 +1로 labeling된 객체의 경우 $w \cdot x + b \ge 1-\xi$를 만족해야하고, -1로 labeling 된 객체의 경우 $w \cdot x + b \le -1+\xi$를 만족해야한다는 것으로 요약할 수 있겠습니다. 
 
 이제 그럼 목적함수 $|w|^2/2 + C \sum \xi$를 한번 살펴보겠습니다. 일단 저 목적함수를 최소화하게되면 margin은 커지게 하면서 penalty term $\sum \xi$은 작게 만들어 준다는 것이 직관적으로 이해되실겁니다. 그리고 한발짝 더 나아가서 생각해보면, margin과 penalty term의 사이의 trade off 관계가 있음을 알 수 있습니다. penalty를 최대한 줄인다는 것은 데이터 객체들을 penalty가 부과되지 않는 영역으로 최대한 많이 옮겨 주어야 한다는 것입니다. 그러려면 당연히 margin을 측정하는 두 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 공간을 줄여야 할 것입니다. 아래의 그림이 바로 그 예시로, 같은 데이터셋에 대해 오른쪽 그림처럼 margin이 줄어들어야 penalty가 작음을 알 수 있습니다.  
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199690481-18d03fae-4386-4eec-9e2c-67ff1169904a.png" height="400px" width="900px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199690481-18d03fae-4386-4eec-9e2c-67ff1169904a.png" height="400px" width="1000px"></p>
 
-근데 여기서 들만한 궁금증은 $\sum \xi$ 앞의 $C$는 갑자기 뭐냐는 것입니다. 이것은 hyper parameter, 즉 알고리즘의 사용자가 직접 정해줘야 하는 값입니다. 원하는 대로 아무거나 정할 수 있는데요, 이것이 가지는 의미는 꽤나 직관적입니다. 목적함수 $|w|^2/2 + C \sum \xi$를 최소화하고 싶은데, $C$가 커지면 어떻게 될까요? $\sum \xi$가 더 작아질 수 있도록 하는 방향으로 최적화가 이뤄질 것이고, 결국 margin은 줄어들 것입니다. 반대로 $C$가 작아지면 $\sum \xi$가 조금 더 커져도 될 것이고 대신 margin이 커지게 되겠죠. 위의 그림에서 왼쪽은 $C$가 더 작은 경우이고, 오른쪽은 $C$가 더 큰 경우로 보아도 무방하겠습니다.  
+근데 여기서 들만한 궁금증은 $\sum \xi$ 앞의 $C$는 갑자기 뭐냐는 것입니다. 이것은 hyper parameter, 즉 알고리즘의 사용자가 직접 정해줘야 하는 값입니다. 원하는 대로 아무거나 정할 수 있는데요, 이것이 가지는 의미는 꽤나 직관적입니다. 목적함수 $|w|^2/2 + C \sum \xi$를 최소화하고 싶은데, $C$가 커지면 어떻게 될까요? 최적화 했을때, $\sum \xi$가 더 작아질 수 있도록 하는 방향으로 최적화가 이뤄질 것이고, 결국 margin은 줄어들 것입니다. 반대로 $C$가 작아지면 $\sum \xi$가 조금 더 커져도 될 것이고 대신 margin이 커지게 되겠죠. 위의 그림에서 왼쪽은 $C$가 더 작은 경우이고, 오른쪽은 $C$가 더 큰 경우로 보아도 무방하겠습니다.  
 
+여기까지 soft margin case의 SVM의 개념을 살펴보았습니다. 그러면 이게 SVM의 최종진화 버젼일까요? 놀랍게도 그렇지 않습니다. hard margin에서 soft margin으로 넘어올 때, 우리는 데이터셋의 이진분류를 완벽하게 수행할 수 있는 선형 경계면이 없는 경우, 즉 linearly seperable하지 않은 경우에도 SVM을 수행하려면 어떻게 해야 하는가에 대해 살펴보았습니다. 다음으로 살펴볼 SVM은 이에 더해 linear한 분류경계면을 찾아내지 않는 SVM을 한번 살펴보겠습니다.
+
+### SVM for Non-Linearly Non-Seperable Case(nonlinear soft margin)
+지금까지 살펴본 SVM은 선형분류경계면을 찾아내는 알고리즘이었습니다. 그러나 이번에 살펴볼 SVM은 nonlinear soft margin SVM으로, 이름에서 보시다시피 "비"선형 분류경계면을 찾아내는 알고리즘입니다. 새삼스래 혼란스럽네요. 분명 SVM은 처음에 선형분류경계면을 찾는다고 했었는데, 이제 와서 갑자기 비선형 분류경계면을 찾는다니...... 조금 더 혼란스러우실 만한 말씀을 드리자면, 지금 설명 드리는 SVM 알고리즘도 선형분류경계면을 찾는 알고리즘입니다. 그러니까 선형분류경계면을 찾으면서 비선형 분류경계면을 찾는 것이죠. 이 모순은 분류경계면을 찾는 차원을 명시해서 설명드리면 해결됩니다. 이렇게 말이죠.
+
+**Nonlinear soft margin SVM은 고차원($D'$차원)으로 데이터를 mapping한 후 고차원 공간에서 soft margin SVM을 수행하여 선형 분류경계면을 찾은 뒤, 이를 다시 원래의 저차원 공간($D$차원)으로 mapping하여 비선형분류경계면을 나타내는 알고리즘입니다.** 
+
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
+
+이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
+
+Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되 $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 그 객체와 $w \cdot x + b = 1$ 사이의 거리를 $\xi$라 하여 $\xi$만큼의 penalty를 부과합니다.(때문에 영역내에 들어와 있는 객체들에는 penalty $\xi$가 0인 것으로 생각할 수 있을 것입니다) 이러한 제약조건은 결국 +1로 labeling된 객체가 $w \cdot x + b \ge 1-\xi$의 영역에 포함되어야 한다는 조건과 같게 됩니다. 그리고 같은 원리로 -1로 labeling 된 객체에 해당하는 제약조건은 $w \cdot x + b \le -1+\xi$가 되겠죠. 정리하면, soft margin SVM에서의 최적화 문제의 목적함수는 $|w|^2/2 + C \sum \xi$, 제약조건은 +1로 labeling된 객체의 경우 $w \cdot x + b \ge 1-\xi$를 만족해야하고, -1로 labeling 된 객체의 경우 $w \cdot x + b \le -1+\xi$를 만족해야한다는 것으로 요약할 수 있겠습니다. 
+
+이제 그럼 목적함수 $|w|^2/2 + C \sum \xi$를 한번 살펴보겠습니다. 일단 저 목적함수를 최소화하게되면 margin은 커지게 하면서 penalty term $\sum \xi$은 작게 만들어 준다는 것이 직관적으로 이해되실겁니다. 그리고 한발짝 더 나아가서 생각해보면, margin과 penalty term의 사이의 trade off 관계가 있음을 알 수 있습니다. penalty를 최대한 줄인다는 것은 데이터 객체들을 penalty가 부과되지 않는 영역으로 최대한 많이 옮겨 주어야 한다는 것입니다. 그러려면 당연히 margin을 측정하는 두 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 공간을 줄여야 할 것입니다. 아래의 그림이 바로 그 예시로, 같은 데이터셋에 대해 오른쪽 그림처럼 margin이 줄어들어야 penalty가 작음을 알 수 있습니다.  
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199690481-18d03fae-4386-4eec-9e2c-67ff1169904a.png" height="400px" width="1000px"></p>
+
+근데 여기서 들만한 궁금증은 $\sum \xi$ 앞의 $C$는 갑자기 뭐냐는 것입니다. 이것은 hyper parameter, 즉 알고리즘의 사용자가 직접 정해줘야 하는 값입니다. 원하는 대로 아무거나 정할 수 있는데요, 이것이 가지는 의미는 꽤나 직관적입니다. 목적함수 $|w|^2/2 + C \sum \xi$를 최소화하고 싶은데, $C$가 커지면 어떻게 될까요? 최적화 했을때, $\sum \xi$가 더 작아질 수 있도록 하는 방향으로 최적화가 이뤄질 것이고, 결국 margin은 줄어들 것입니다. 반대로 $C$가 작아지면 $\sum \xi$가 조금 더 커져도 될 것이고 대신 margin이 커지게 되겠죠. 위의 그림에서 왼쪽은 $C$가 더 작은 경우이고, 오른쪽은 $C$가 더 큰 경우로 보아도 무방하겠습니다. 
+
+여기까지 soft margin case의 SVM의 개념을 살펴보았습니다. 
 
 ---
 
