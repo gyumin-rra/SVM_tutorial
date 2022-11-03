@@ -120,7 +120,7 @@ Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot
 
 **Nonlinear soft margin SVM은 고차원(D차원)으로 데이터를 mapping한 후 고차원 공간에서 soft margin SVM을 수행하여 선형 분류경계면을 찾은 뒤, 이를 다시 원래의 저차원 공간(d차원)으로 mapping하여 비선형분류경계면을 나타내는 알고리즘입니다.** 아래의 예시를 보시죠.
 
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199700189-857e235b-3553-498e-b5f7-07d07b68db17.png" height="400px" width="1000px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199700189-857e235b-3553-498e-b5f7-07d07b68db17.png" height="500px" width="1000px"></p>
 
 이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
 
