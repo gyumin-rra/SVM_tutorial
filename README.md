@@ -73,7 +73,7 @@ $$R_(w)\leq R_{emp}(w)+\sqrt{\frac{h(ln({2l \over h})+1)-ln({\delta \over 4})}{l
 
 ## Concepts of Support Vector Machine(SVM)
 SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 분류하는 선형의(linear) 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 모든 종류의 초평면은 
-$ *w* \cdot *x* + b =0$로 나타낼 수 있습니다. 
+$w \cdot x + b =0$ 로 나타낼 수 있습니다. 
 
 
 ---
