@@ -101,10 +101,12 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 다만 하나만 첨언하자면 실제로는 $2/|w|$의 분모에 제곱근이 포함되어 있기 때문에, 이를 동일한 의미를 가지도록 $|w|^2/2$를 최"소"화하도록 학습을 진행합니다. 이는 결국 $|w|^2/2$을 목적함수로 하고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 것을 제약조건으로 가지는 최적화 문제로 formulation 할 수 있습니다.
 
 ### SVM for Linearly Non-Seperable Case
-지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 무엇이 다를까요? 그러한 경우에는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
+지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 linearly non-separable case의 SVM 혹은 linear soft margin SVM이라고 합니다. 앞서 hard margin case와 soft margin case와는 무엇이 다를까요? soft margin case에서는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
 
+이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다. 
 
+이제 데이터셋에서 +1로 labeling된 객체가  $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되  $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 $w \cdot x + b = 1$ $\xi > 0$라는 penalty를 부과합니다. 이러한 제약조건은 결국 +1로 labeling된 객체가  $w \cdot x + b \ge 1$의 영역
 
 ---
 
