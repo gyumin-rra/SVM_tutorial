@@ -145,13 +145,14 @@ Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal
 | sklearn    | 1.1.1   |
 
 사용할 데이터셋은 kaggle의 [heart attack dataset](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset)입니다. 파일이 두 개가 있는데, haert.csv를 사용했습니다. 그리고 SVM의 구현을 위해 사용해볼 모듈은 sklearn.svm의 SVC 입니다. 실험해볼 내용은 총 3가지로, 아래와 같습니다.
-1. $l/h$, 즉 표본의 개수에 비한 함수의 복잡도에 따른 test set에서의 error 및 training error와의 비교.
+1. $l/h$, 즉, 함수의 복잡도에 따른 test set에서의 성능, training set에서의 성능 비교 분석
 2. 비선형적 mapping 상황에서의 RBF kernel SVM과 그냥 linear soft margin SVM의 성능 비교.
 3. 비선형적 mapping 상황에서의 RBF kernel SVM의 gamma와 C에 따른 분류 경계면 비교.
 
-### 함수의 복잡도에 따른 test error 및 training error의 성능 비교 및 
-우선 1.을 시험해보기 위해 다음과 같이 k-fold 함수와 evaluation 함수를 구현하였습니다. 실험에서는 5-fold로 진행하였고, evaluation metric은 AUROC, TPR, TNR, precision, f1-score를 사용하였습니다.
-- k-fold 함수: 각 fold에 0과 1의 비율이 유사하게 구성되도록 고려함.
+### 함수의 복잡도에 따른 test error 및 training error의 성능 비교 분석
+우선 1.을 시험해보기 위해 다음과 같이 k-fold 함수와 evaluation 함수를 구현하였습니다. 5-fold로 실험을 진행하였고, evaluation metric은 accuracy, f1-score를 사용하였습니다. 비교대상으로 그냥 linear soft margin SVM과 그보다 복잡도가 높은 RBF kernel SVM 모델(with C=1000)을 골라 실험을 진행하였습니다. 비교 분석의 포인트는 총 두가지로, 첫째는 복잡도가 높아질 경우 test 성능, 즉 일반화 성능이 떨어지는지를 살펴보고 두번째로는 복잡도가 낮아지는 경우 실제로 empirical error, 즉 training set에서의 성능이 일반화 성능에 비슷한지를 살펴보았습니다. 
+
+1. k-fold 함수: 각 fold에 0과 1의 비율이 유사하게 구성되도록 고려함.
 ```python
 def kfold(data, fold, seed):
     import random
@@ -190,27 +191,57 @@ for i in range(5):
 2. 성능평가를 위한 evaluation 함수
 ```python
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_auc_score
-def evaluation(fold_num, model, tst_X, tst_y, data):
+def evaluation(fold_num, model, trn_X, trn_y, tst_X, tst_y, data):
+    y_pred = model.predict(trn_X)
+    tn, fp, fn, tp = confusion_matrix(trn_y, y_pred).ravel()
+    data.loc[fold_num, 'trn_accuracy'] = (tp+tn)/(tn+fp+fn+tp)
+    data.loc[fold_num, 'trn_f1'] = 2*tp/(fp+2*tp+fn)
+    
+
     y_pred = model.predict(tst_X)
-    print('AUROC: '+str(roc_auc_score(tst_y, y_pred)))
-    data.loc[fold_num, 'AUROC'] = roc_auc_score(tst_y, y_pred)
-    print('Confusion Matrix')
-    print(confusion_matrix(tst_y, y_pred))
     tn, fp, fn, tp = confusion_matrix(tst_y, y_pred).ravel()
-    print('TPR(TP/AP), sensitivity, recall: ' + str(tp/(fn+tp)))
-    data.loc[fold_num, 'TPR'] = tp/(fn+tp)
-    print('TNR(TN/AN), specificity: ' + str(tn/(fp+tn)))
-    data.loc[fold_num, 'TNR'] = tn/(fp+tn)
-    print('precision(TP/PP): ' + str(tp/(fp+tp)))
-    data.loc[fold_num, 'precision'] = tp/(fp+tp)
-    print('f1 score: ' + str(2*tp/(fp+2*tp+fn)))
-    data.loc[fold_num, 'f1'] = 2*tp/(fp+2*tp+fn)
+    data.loc[fold_num, 'tst_accuracy'] = (tp+tn)/(tn+fp+fn+tp)
+    data.loc[fold_num, 'tst_f1'] = 2*tp/(fp+2*tp+fn)
 
     return data
 ```
 
-결과를 보면 실제 결과와 시간과 성능 면에서 심한 차이가 있음을 알 수 있습니다. 하이퍼 파라미터의 차이도 그 이유 중 하나겠지만, 그보다 중요한 것은 현재 구현된 t-SNE 코드는 실제 t-SNE논문의 'simple version of t-distributed Stochastic Neighbor Embedding'의 구현체라는 점입니다. 편의를 위해 이 t-SNE 구현체를 raw t-SNE라고 하면, 실제로 요즈음 쓰이는 t-SNE에는 raw t-SNE에 몇 가지 내용이 추가됩니다. 
+3. 실험 코드
+```python
+eval_data = pd.DataFrame([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], columns=['trn_accuracy', 'trn_f1', 'tst_accuracy', 'tst_f1'])
+from sklearn.svm import SVC
+# simple model: linear soft margin
+for i in range(5):
+    fold_num = i
+    LSM_SVM = SVC(kernel='linear', C=1)
+    LSM_SVM.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, LSM_SVM, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+
+eval_data.mean()
+print(100*abs(eval_data.mean()['trn_accuracy']-eval_data.mean()['tst_accuracy'])/eval_data.mean()['tst_accuracy'])
+print(100*abs(eval_data.mean()['trn_f1']-eval_data.mean()['tst_f1'])/eval_data.mean()['tst_f1'])
+
+# complex model: nonlinear soft margin
+for i in range(5):
+    fold_num = i
+    LSM_SVM = SVC(kernel='rbf', C=1000)
+    LSM_SVM.fit(trn_X[fold_num], trn_y[fold_num])
+    eval_data = evaluation(fold_num, LSM_SVM, trn_X[fold_num], trn_y[fold_num], tst_X[fold_num], tst_y[fold_num], eval_data)
+
+eval_data.mean()
+print(100*abs(eval_data.mean()['trn_accuracy']-eval_data.mean()['tst_accuracy'])/eval_data.mean()['tst_accuracy'])
+print(100*abs(eval_data.mean()['trn_f1']-eval_data.mean()['tst_f1'])/eval_data.mean()['tst_f1'])
+```
+
+결과는 아래와 같습니다.
+![image](https://user-images.githubusercontent.com/112034941/199727492-9488c453-03cd-4d98-ad41-7e7a3ee3cee5.png)
+
+우선 보시다시피, 전체적 성능이 복잡도가 작은 모델인 linear soft margin SVM 모델에서 높은 것을 확인하실 수 있고, 실제로 training set과 test set 간의 성능 차이도 복잡도가 더 작은 모델에서 더 작게 나타났음을 확인하실 수 있습니다. 앞서 theoretical background의 SRM 부분에서 설명드렸던 양상이 그대로 나타난 것이죠. 특히 이 데이터셋의 경우 sample의 수가 작기 때문에 복잡도에 의한 성능 저하가 더 뚜렷하게 나타난 것으로 보입니다. 다음 실험으로 넘어가겠습니다.
+
+### 비선형적 mapping 상황에서의 RBF kernel SVM과 그냥 linear soft margin SVM의 성능 비교
+우선 현재 실험하는 데이터셋을 t-SNE를 통해 비선형적으로 2차원에 mapping해보겠습니다. 실험 코드와 결과는 아래와 같습니다.
+
+
 
 1. Ealry Exaggeration: 조금 더 빠른 해의 수렴을 위해 $p_{ij}$ 행렬에 특정 수를 곱하고, 일정 iteration을 넘어가면 다시 원래 행렬로 변환하여 gradient를 계산합니다.
 2. [Barnes-hut SNE](https://arxiv.org/pdf/1301.3342.pdf): metric trees 및 barnes-hut algorithm을 $p_{ij}$ 행렬을 근사하고 그래디언트도 근사하여 계산복잡도를 줄입니다. 본래 계산복잡도는 $O(N^2)$이지만, 이 방법론에서의 해당 과정의 계산복잡도는 $O(NlogN)$이라고 합니다.
