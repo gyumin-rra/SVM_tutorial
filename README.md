@@ -1,7 +1,7 @@
 # SVM tutorial
 a simple tutorial for support vector machine
 
-이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 여러 support vector machine에 대한 배경이론 제시, support vector machine의 개념 설명, 그리고 이를 sklearn의 모듈 구현체를 이용해 직접 실습해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
+이 repository는 support vector machine을 처음  분들을 위해 작성되었습니다. 그래서 우선 여러 support vector machine에 대한 배경이론 제시, support vector machine의 개념 설명, 그리고 이를 sklearn의 모듈 구현체를 이용해 직접 실습해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
 
 ## 목차
 1. [Theoretical Background](#theoretical-background)
@@ -116,22 +116,19 @@ Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot
 여기까지 soft margin case의 SVM의 개념을 살펴보았습니다. 그러면 이게 SVM의 최종진화 버젼일까요? 놀랍게도 그렇지 않습니다. hard margin에서 soft margin으로 넘어올 때, 우리는 데이터셋의 이진분류를 완벽하게 수행할 수 있는 선형 경계면이 없는 경우, 즉 linearly seperable하지 않은 경우에도 SVM을 수행하려면 어떻게 해야 하는가에 대해 살펴보았습니다. 다음으로 살펴볼 SVM은 이에 더해 linear한 분류경계면을 찾아내지 않는 SVM을 한번 살펴보겠습니다.
 
 ### SVM for Non-Linearly Non-Seperable Case(nonlinear soft margin)
-지금까지 살펴본 SVM은 선형분류경계면을 찾아내는 알고리즘이었습니다. 그러나 이번에 살펴볼 SVM은 nonlinear soft margin SVM으로, 이름에서 보시다시피 "비"선형 분류경계면을 찾아내는 알고리즘입니다. 새삼스래 혼란스럽네요. 분명 SVM은 처음에 선형분류경계면을 찾는다고 했었는데, 이제 와서 갑자기 비선형 분류경계면을 찾는다니...... 조금 더 혼란스러우실 만한 말씀을 드리자면, 지금 설명 드리는 SVM 알고리즘도 선형분류경계면을 찾는 알고리즘입니다. 그러니까 선형분류경계면을 찾으면서 비선형 분류경계면을 찾는 것이죠. 이 모순은 분류경계면을 찾는 차원을 명시해서 설명드리면 해결됩니다. 이렇게 말이죠.
+지금까지 살펴본 SVM은 선형분류경계면을 찾아내는 알고리즘이었습니다. 그러나 이번에 살펴볼 SVM은 nonlinear soft margin SVM 내지는 kernel SVM으로, 이름에서 보시다시피 "비"선형 분류경계면을 찾아내는 알고리즘입니다. 새삼스래 혼란스럽네요. 분명 SVM은 처음에 선형분류경계면을 찾는다고 했었는데, 이제 와서 갑자기 비선형 분류경계면을 찾는다니...... 조금 더 혼란스러우실 만한 말씀을 드리자면, 지금 설명 드리는 SVM 알고리즘도 선형분류경계면을 찾는 알고리즘입니다. 그러니까 선형분류경계면을 찾으면서 비선형 분류경계면을 찾는 것이죠. 이 모순은 분류경계면을 찾는 차원을 명시해서 설명드리면 해결됩니다. 이렇게 말이죠.
 
-**Nonlinear soft margin SVM은 고차원(D차원)으로 데이터를 mapping한 후 고차원 공간에서 soft margin SVM을 수행하여 선형 분류경계면을 찾은 뒤, 이를 다시 원래의 저차원 공간(d차원)으로 mapping하여 비선형분류경계면을 나타내는 알고리즘입니다.** 아래의 예시를 보시죠.
+**Nonlinear soft margin SVM은 고차원으로 mapping된 데이터에 soft margin SVM을 수행하여 선형 분류경계면을 찾는 알고리즘으로, 여기서 찾은 고차원의 선형 분류경계면은 저차원 공간에서의 비선형분류경계면이 됩니다.** 아래의 예시를 보시죠.
 
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199700189-857e235b-3553-498e-b5f7-07d07b68db17.png" height="500px" width="1000px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199701644-a0b132b4-08a0-4fa2-908f-58629bf23841.png" height="450px" width="1000px"></p>
 
-이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
+왼쪽 그림처럼 2차원 공간의 데이터셋을 보면 아무래도 선형경계면보다는 원과 같은 비선형 경계면을 찾아내는 것이 더 좋아보입니다. 이때 kernel SVM은 왼쪽그림과 같은 2차원 데이터를 3차원으로 mapping하여 새로운 $z$축의 값을 $z=x^2+y^2$로 하도록 하여 새로운 3차원 공간에서의 선형분류경계면을 찾아냅니다. 이는 보시다시피 2차원에서 비선형분류경계면을 찾아내는 것과 동일하죠. 수식적으로도 한번 살펴보면, linear soft margin case와 대부분이 동일하되, 제약 조건이 달라집니다. 앞서 제시했듯이, 고차원에서의 mapping된 데이터에 soft margin SVM을 수행하는 것이기 때문에 이 mapping함수를 $\Phi (x)$라 하면, nonlinear case의 SVM의 제약조건은 +1로 labeling된 객체의 경우 $w \cdot \Phi (x) + b \ge 1-\xi$를 만족해야하고, -1로 labeling 된 객체의 경우 $w \cdot \Phi (x) + b \le -1+\xi$를 만족해야한다는 것으로 정리할 수 있습니다. 앞서 살펴보았던 제약조건의 $x$ 부분이 그냥 $\Phi (x)$로 바뀐 것이죠. 
 
-Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되 $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 그 객체와 $w \cdot x + b = 1$ 사이의 거리를 $\xi$라 하여 $\xi$만큼의 penalty를 부과합니다.(때문에 영역내에 들어와 있는 객체들에는 penalty $\xi$가 0인 것으로 생각할 수 있을 것입니다) 이러한 제약조건은 결국 +1로 labeling된 객체가 $w \cdot x + b \ge 1-\xi$의 영역에 포함되어야 한다는 조건과 같게 됩니다. 그리고 같은 원리로 -1로 labeling 된 객체에 해당하는 제약조건은 $w \cdot x + b \le -1+\xi$가 되겠죠. 정리하면, soft margin SVM에서의 최적화 문제의 목적함수는 $|w|^2/2 + C \sum \xi$, 제약조건은 +1로 labeling된 객체의 경우 $w \cdot x + b \ge 1-\xi$를 만족해야하고, -1로 labeling 된 객체의 경우 $w \cdot x + b \le -1+\xi$를 만족해야한다는 것으로 요약할 수 있겠습니다. 
+이때, 아주 아주 중요한 개념이 하나 등장합니다. 바로 kernel입니다. 굉장히 유명하고 중요한 개념이고, 사실 SVM이 성공적인 알고리즘이 된건 바로 이 kernel 덕이라고 해도 과언이 아닙니다. 지금까지 설명 속에서 우리는 총 세 가지case의 SVM의 개념을 살펴보았고, 각 경우마다 어떤 식으로 문제를 formulation 해야하는지도 함께 살펴보았습니다. 하지만 그걸 그래서 어떻게 푸는지는 살펴보지 않았죠. 이 과정은 라그랑지안 승수법(lagrangian multiplier method), primal-dual interior point method를 활용하여 해결해야 하는 문제입니다만 그 부분은 추후에 기회가 된다면 다뤄보기로 하고, 지금은 kernel과 연관된 부분의 개념만 보겠습니다. 
 
-이제 그럼 목적함수 $|w|^2/2 + C \sum \xi$를 한번 살펴보겠습니다. 일단 저 목적함수를 최소화하게되면 margin은 커지게 하면서 penalty term $\sum \xi$은 작게 만들어 준다는 것이 직관적으로 이해되실겁니다. 그리고 한발짝 더 나아가서 생각해보면, margin과 penalty term의 사이의 trade off 관계가 있음을 알 수 있습니다. penalty를 최대한 줄인다는 것은 데이터 객체들을 penalty가 부과되지 않는 영역으로 최대한 많이 옮겨 주어야 한다는 것입니다. 그러려면 당연히 margin을 측정하는 두 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 공간을 줄여야 할 것입니다. 아래의 그림이 바로 그 예시로, 같은 데이터셋에 대해 오른쪽 그림처럼 margin이 줄어들어야 penalty가 작음을 알 수 있습니다.  
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199690481-18d03fae-4386-4eec-9e2c-67ff1169904a.png" height="400px" width="1000px"></p>
+Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal 문제에서 dual 문제로 전환하게 되고 결국 dual 문제를 해결하려면 우리가 알아야 하는 것이 각 데이터 객체 별 고차원으로의 mapping된 값의 "내적값" 뿐이라는 것을 알게됩니다. 수식으로 나타내자면 $\Phi (x_i) \cdot \Phi (x_j)$죠. 데이터 객체 $x_i,x_j$를 input으로 받아 $\Phi (x_i) \cdot \Phi (x_j)$를 output으로 하는 함수가 있다면, 우리는 굳이 데이터를 먼저 고차원으로 mapping하는 함수 $\Phi$를 찾아주어야 할 필요가 없을 것입니다. 여기가 바로 kernel이 사용되는 순갑입니다. kernel은 정확하게 $x_i,x_j$를 input으로 받아 $\Phi (x_i) \cdot \Phi (x_j)$를 내보내 주는 함수 $K(x_i,x_j)$를 말합니다. 그래서 그냥 kernel 함수만 정해주면 데이터 객체의 고차원으로의 추가적인 mapping 후 내적하는 과정없이 kernel에서의 input과 output만 수행해주면 되는 것입니다. 
 
-근데 여기서 들만한 궁금증은 $\sum \xi$ 앞의 $C$는 갑자기 뭐냐는 것입니다. 이것은 hyper parameter, 즉 알고리즘의 사용자가 직접 정해줘야 하는 값입니다. 원하는 대로 아무거나 정할 수 있는데요, 이것이 가지는 의미는 꽤나 직관적입니다. 목적함수 $|w|^2/2 + C \sum \xi$를 최소화하고 싶은데, $C$가 커지면 어떻게 될까요? 최적화 했을때, $\sum \xi$가 더 작아질 수 있도록 하는 방향으로 최적화가 이뤄질 것이고, 결국 margin은 줄어들 것입니다. 반대로 $C$가 작아지면 $\sum \xi$가 조금 더 커져도 될 것이고 대신 margin이 커지게 되겠죠. 위의 그림에서 왼쪽은 $C$가 더 작은 경우이고, 오른쪽은 $C$가 더 큰 경우로 보아도 무방하겠습니다. 
-
-여기까지 soft margin case의 SVM의 개념을 살펴보았습니다. 
+이러한 kernel 함수의 종류는 다양합니다. RBF(Gaussian) kernel, polynomial kernel, sigmoid kernel 등 다양한 kernel이 존재하지만, 이 중 가장 자주 쓰이는 것은 gaussian kernel로, 수식은 $K(x_i,x_j)=exp(\gamma|x_i-x_j|^2)$, $\gamma=1/\sigam ^2$
 
 ---
 
