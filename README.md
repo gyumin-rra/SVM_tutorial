@@ -128,12 +128,14 @@ Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot
 
 Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal 문제에서 dual 문제로 전환하게 되고 결국 dual 문제를 해결하려면 우리가 알아야 하는 것이 각 데이터 객체 별 고차원으로의 mapping된 값의 "내적값" 뿐이라는 것을 알게됩니다. 수식으로 나타내자면 $\Phi (x_i) \cdot \Phi (x_j)$죠. 데이터 객체 $x_i,x_j$를 input으로 받아 $\Phi (x_i) \cdot \Phi (x_j)$를 output으로 하는 함수가 있다면, 우리는 굳이 데이터를 먼저 고차원으로 mapping하는 함수 $\Phi$를 찾아주어야 할 필요가 없을 것입니다. 여기가 바로 kernel이 사용되는 순갑입니다. kernel은 정확하게 $x_i,x_j$를 input으로 받아 $\Phi (x_i) \cdot \Phi (x_j)$를 내보내 주는 함수 $K(x_i,x_j)$를 말합니다. 그래서 그냥 kernel 함수만 정해주면 데이터 객체의 고차원으로의 추가적인 mapping 후 내적하는 과정없이 kernel에서의 input과 output만 수행해주면 되는 것입니다. 
 
-이러한 kernel 함수의 종류는 다양합니다. RBF(Gaussian) kernel, polynomial kernel, sigmoid kernel 등 다양한 kernel이 존재하지만, 이 중 가장 자주 쓰이는 것은 gaussian kernel로, 수식은 $K(x_i,x_j)=exp(\gamma|x_i-x_j|^2)$, $\gamma=1/\sigam ^2$
+이러한 kernel 함수의 종류는 다양합니다. RBF(Gaussian) kernel, polynomial kernel, sigmoid kernel 등 다양한 kernel이 존재하지만, 이 중 가장 자주 쓰이는 것은 RBF kernel로, 수식은 $K(x_i,x_j)=exp(-\gamma|x_i-x_j|^2)$, $where \gamma=1/\sigma ^2$와 같습니다. RBF kernel에서 추가로 알아두면 좋은 점은 $\gamma$가 커지면(혹은 $\sigma$가 작아지면) 더 비선형성이 높은 분류경계면이 생겨난다는 점입니다. 이를 최적화 과정에서 kernel 함수의 역할을 생각해보면 결국 라그랑지안 승수가 마구잡이로 커지는 것에 도움을 주어 다양한 support vector가 나오게 하기 때문이라고 해석할 수도 있겠으나 이에 관해 다루지 않았으니 그냥 이 정도로 하고 넘어가도록 하겠습니다.
+
+여기까지, support vector machine의 개념에 대해 살펴보았습니다. 이러한 과정을 통해 support vector machine와 관련한 이론에 대해서 배운 내용을 파이썬의 모듈들을 이용해 실제로 실험해보도록 하겠습니다.
 
 ---
 
 ## SVM Implementation
-우선 실제 구현 및 실험에 앞서 필요한 모듈 등의 버젼은 아래와 같습니다.
+우선 실험에 앞서 필요한 모듈 등의 버젼은 아래와 같습니다.
 | env_name   | version |
 |------------|---------|
 | python     | 3.8.3   |
@@ -142,127 +144,9 @@ Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal
 | pandas     | 1.4.3   |
 | sklearn    | 1.1.1   |
 
-구현해주어야 할 함수와 그를 구현한 결과는 아래와 같습니다.(numpy를 사용하였습니다.)
-1. euclidean distance matrix 반환: n by d 데이터셋의 n by n 거리 행렬을 반환하는 함수.
-```python
-def make_dist_matrix(X):# n by d의 np.ndarray dataset 가정
-    sum_sqr_X = np.sum(np.square(X), axis = 1)# 1 by n의 객체 element 제곱의 합 matrix
-    dist_matrix = np.add(np.add(sum_sqr_X, -2*np.dot(X, X.T)).T, sum_sqr_X)# 1 diag(X X^T)^T -2 * X X^T + 1^T diag(X X^T)
-    return dist_matrix
-```
-2. $p_{j|i}$ matrix 반환: distance matrix와 객체 별 sigma vector를 input으로 받아 i행 j열 원소에 $p_{j|i}$를 가지는 matrix 반환하는 함수
-```python
-def make_p_j_cond_i_mat(dist_matrix, sigma_vec):
-    sqrd_sigma_vec = 2. * np.square(sigma_vec.reshape((-1, 1)))
-    tmp_matrix = -dist_matrix / sqrd_sigma_vec
-    exp_matrix = np.exp(tmp_matrix)
-    np.fill_diagonal(exp_matrix, 0.) # p_i|i == 0
-    exp_matrix = exp_matrix + 1e-10 # avoiding division by 0 
-  
-    return exp_matrix / exp_matrix.sum(axis=1).reshape([-1, 1])
-```
-3. $p_{ij}$ matrix 반환: $p_{j|i}$ matrix를 받아 $p_{ij}$ matrix를 반환하는 함수 
-```python
-def make_p_ij_mat(p_j_cond_i_mat):
-    return (p_j_cond_i_mat + p_j_cond_i_mat.T) / (2. * p_j_cond_i_mat.shape[0])
-```
-4. $q_{ij}$ matrix 반환: 축소된 공간에서의 데이터셋 n by d'를 받아 $q_{ij}$ matrix와 그래디언트 계산을 위한 $1+|y_i-y_j|^2$행렬을 반환하는 함수
-```python
-def make_q_ij_mat(Y):
-    dist_matrix = make_dist_matrix(Y)
-    invrs_dist_mat = np.power(1. + dist_matrix, -1)
-    np.fill_diagonal(invrs_dist_mat, 0.) # q_ii == 0
-    
-    return invrs_dist_mat / np.sum(invrs_dist_mat), invrs_dist_mat# for gradient
-```
-5. binary search: 이진탐색 구현
-```python
-def binary_search(func, target, lower_bound=1e-20, upper_bound=1000., tolerance=1e-10, max_iter=5000):
-    for i in range(max_iter):
-        guess = (lower_bound+upper_bound)/2
-        guess = func(guess) # function will be perplexity calculator from sigma
-        if np.abs(guess - target) <= tolerance:
-            break
-        
-        if guess > target:
-            upper_bound = guess
-        else:
-            lower_bound = guess
-    
-    return guess
-```
-6. perplexity vector 반환: 거리행렬과 sigma vector를 input으로 하여 각 객체들의 현재 perplexity를 원소로하는 벡터를 반환하는 함수
-```python
-def make_perp_vec(dist_matrix, sigma_vec):
-    p_j_cond_i_mat = make_p_j_cond_i_mat(dist_matrix, sigma_vec)
-    entropy = -np.sum(p_j_cond_i_mat * np.log2(p_j_cond_i_mat), 1)# j에 대해 모두 더함.
-    perp_vec = 2 ** entropy# 1 by n perplexity 벡터 
-    return perp_vec
-```
-7. sigma vercotr 반환: 5, 6을 이용하여 설정한 perplexity를 만족하는 sigma를 찾는 함수
-```python
-def make_sigma_vec(dist_matrix, target_perplexity, make_perp_vec):
-    sigma_vec = [] 
-    for i in range(dist_matrix.shape[0]):
-        func = lambda sigma: \
-            make_perp_vec(dist_matrix[i:i+1, :], np.array(sigma)) # 객체 i에 대한 perplexity 계산
-        
-        correct_sigma = binary_search(func, target_perplexity)
-        
-        sigma_vec.append(correct_sigma)
-    # 1 by n sigma_vec 반환
-    return np.array(sigma_vec)
-```
-8. gradient matrix 반환: solution을 update하기 위한 gradient를 update하는 함수
-```python
-def make_grad_matrix(p_ij_mat, q_ij_mat, Y, invrs_dist_mat):
-    pq_diff_mat = p_ij_mat - q_ij_mat
-    pq_expanded = np.expand_dims(pq_diff_mat, 2)
-    y_diffs = np.expand_dims(Y, 1) - np.expand_dims(Y, 0)
-    distances_expanded = np.expand_dims(invrs_dist_mat, 2)
+사용할 데이터셋은 kaggle의 [heart attack dataset](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset)입니다. 파일이 두 개가 있는데, haert.csv를 사용했습니다. 
 
-    grad_matrix = 4. * (pq_expanded * y_diffs * distances_expanded).sum(1)
-    return grad_matrix
-```
-9. optimization: 초기화 후 momentum을 이용한 최적화를 하는 함수
-```python
-def optimization(X, p_ij_mat, max_iter, learning_rate, momentum, target_dim, seed):
-    # initialization
-    Y = np.random.default_rng(seed=1).normal(0.0, scale = 0.0001, size = [X.shape[0], target_dim])
-    Y_t = Y.copy()# momentum
-    Y_t_1 = Y.copy()# momentum
-
-    # gradient descent
-    for i in range(max_iter):
-        # q_ij 구하기
-        q_ij_mat, invrs_dist_mat = make_q_ij_mat(Y)
-        # gradient 구하기
-        grad_matrix = make_grad_matrix(p_ij_mat, q_ij_mat, Y, invrs_dist_mat)
-
-        # solution update
-        Y = Y - learning_rate*grad_matrix + momentum*(Y_t - Y_t_1)
-        # momentum update
-        Y_t_1 = Y_t.copy()
-        Y_t = Y.copy()
-            
-    return Y
-```
-10. t-SNE 함수: 원 논문에서의 TSNE 수도코드를 구현한 함수. time 모듈을 활용하여 시간을 측정하였습니다.
-```python
-def raw_TSNE(X, target_dim, target_perplexity, max_iter, learning_rate, momentum, seed):
-    import time
-    st = time.time()
-    dist_matrix = make_dist_matrix(X)
-    print('made dist matrix, ' + str(time.time()-st))
-    sigma_vec = make_sigma_vec(dist_matrix, target_perplexity, make_perp_vec)
-    print('made sigma vector, ' + str(time.time()-st))
-    p_ij_mat = make_p_ij_mat(make_p_j_cond_i_mat(dist_matrix, sigma_vec))
-    print('made p_ij_mat, ' + str(time.time()-st))
-    Y = optimization(X, p_ij_mat, max_iter, learning_rate, momentum, target_dim, seed)
-    print('done, ' + str(time.time()-st))
-    
-    return Y
-```
+파이썬에는 SVM을 구현한 다양한 모듈이 많습니다. 그 중에서 사용해볼 모듈은 sklearn.svm의 SVC 입니다.
 
 이를 이용하여 [MNIST](http://yann.lecun.com/exdb/mnist/)를 기반으로 실제로 tSNE를 진행한 결과는 아래와 같습니다.(pandas(v1.19.2)와 matplotlib(v1.19.2)을 활용하였습니다.)
 ```python
