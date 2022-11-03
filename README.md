@@ -149,8 +149,9 @@ Non-linear soft margin case의 최적화 문제를 풀다보면 문제를 primal
 2. 비선형적 mapping 상황에서의 RBF kernel SVM과 그냥 linear soft margin SVM의 성능 비교.
 3. 비선형적 mapping 상황에서의 RBF kernel SVM의 gamma와 C에 따른 분류 경계면 비교.
 
-우선 1.을 시험해보기 위해 다음과 같이 k-fold 함수와 evaluation 함수를 구현하였습니다.
-1. k-fold 함수
+### 함수의 복잡도에 따른 test error 및 training error의 성능 비교 및 
+우선 1.을 시험해보기 위해 다음과 같이 k-fold 함수와 evaluation 함수를 구현하였습니다. 실험에서는 5-fold로 진행하였고, evaluation metric은 AUROC, TPR, TNR, precision, f1-score를 사용하였습니다.
+- k-fold 함수: 각 fold에 0과 1의 비율이 유사하게 구성되도록 고려함.
 ```python
 def kfold(data, fold, seed):
     import random
