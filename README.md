@@ -89,8 +89,10 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 
 **따라서, margin은 $w$의 함수입니다!**
 
-정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 여기까지가 가장 기본적인 형태의 SVM의 개념이었습니다. 이러한 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있다는 것입니다. 당연히, 그렇지 못한 case도 존재합니다. 그러한 경우에는 앞서 설정한 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 이 조건에 몇가지 조건을 추가하면서 $2/|w|$를 최대화하게 됩니다. 그러한 케이스의 그림은 아래와 같이 나타낼 수 있습니다. 
+정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 여기까지가 가장 기본적인 형태의 SVM의 개념이었습니다. 이러한 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있다는 것입니다. 당연히, 그렇지 못한 case도 존재합니다. 그러한 경우에는 앞서 설정한 기존 조건에 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 조건을 변형하고 $2/|w|$가 아닌 $2/|w|+C \sum \xi$를 최대화하게 됩니다. 그러한 케이스의 그림은 아래와 같이 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
+
+
 
 ---
 
