@@ -1,7 +1,7 @@
 # SVM tutorial
 a simple tutorial for support vector machine
 
-이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 여러 support vector machine에 대한 배경이론 제시, support vector machine의 개념 설명, 그리고 이를 기반으로 support vector machine을 다른 모듈의 구현체없이 직접 구현해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
+이 repository는 support vector machine에 대해 아무것도 모르는 분들을 위해 작성되었습니다. 그래서 우선 여러 support vector machine에 대한 배경이론 제시, support vector machine의 개념 설명, 그리고 이를 sklearn의 모듈 구현체를 이용해 직접 실습해보는 순서로 구성하였습니다. 그리고 이 repository의 이론적인 토대는 첨부드린 논문과 고려대학교 강필성 교수님의 [유튜브 강의](https://www.youtube.com/watch?v=gzbafL28vA0&list=PLetSlH8YjIfWMdw9AuLR5ybkVvGcoG2EW&index=8)를 참고하였음을 밝힙니다. 
 
 ## 목차
 1. [Theoretical Background](#theoretical-background)
@@ -104,9 +104,15 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 linearly non-separable case의 SVM 혹은 linear soft margin SVM이라고 합니다. 앞서 hard margin case와 soft margin case와는 무엇이 다를까요? soft margin case에서는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
 
-이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다. 
+이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
 
-이제 데이터셋에서 +1로 labeling된 객체가  $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되  $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 $w \cdot x + b = 1$ $\xi > 0$라는 penalty를 부과합니다. 이러한 제약조건은 결국 +1로 labeling된 객체가  $w \cdot x + b \ge 1$의 영역
+Soft margin SVM에서는 데이터셋에서 +1로 labeling된 객체가 $w \cdot x + b \ge 1$의 영역에 있지 않는 경우를 허용하되 $w \cdot x + b \ge 1$의 영역에 있지 않은 객체에는 그 객체와 $w \cdot x + b = 1$ 사이의 거리를 $\xi$라 하여 $\xi$만큼의 penalty를 부과합니다.(때문에 영역내에 들어와 있는 객체들에는 penalty $\xi$가 0인 것으로 생각할 수 있을 것입니다) 이러한 제약조건은 결국 +1로 labeling된 객체가 $w \cdot x + b \ge 1-\xi$의 영역에 포함되어야 한다는 조건과 같게 됩니다. 그리고 같은 원리로 -1로 labeling 된 객체에 해당하는 제약조건은 $w \cdot x + b \le -1+\xi$가 되겠죠. 정리하면, soft margin SVM에서의 최적화 문제의 목적함수는 $|w|^2/2 + C \sum \xi$, 제약조건은 +1로 labeling된 객체의 경우 $w \cdot x + b \ge 1-\xi$를 만족해야하고, -1로 labeling 된 객체의 경우 $w \cdot x + b \le -1+\xi$를 만족해야한다는 것으로 요약할 수 있겠습니다. 
+
+이제 그럼 목적함수 $|w|^2/2 + C \sum \xi$를 한번 살펴보겠습니다. 일단 저 목적함수를 최소화하게되면 margin은 커지게 하면서 penalty term $\sum \xi$은 작게 만들어 준다는 것이 직관적으로 이해되실겁니다. 그리고 한발짝 더 나아가서 생각해보면, margin과 penalty term의 사이의 trade off 관계가 있음을 알 수 있습니다. penalty를 최대한 줄인다는 것은 데이터 객체들을 penalty가 부과되지 않는 영역으로 최대한 많이 옮겨 주어야 한다는 것입니다. 그러려면 당연히 margin을 측정하는 두 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 공간을 줄여야 할 것입니다. 아래의 그림이 바로 그 예시로, 같은 데이터셋에 대해 오른쪽 그림처럼 margin이 줄어들어야 penalty가 작음을 알 수 있습니다.  
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199690481-18d03fae-4386-4eec-9e2c-67ff1169904a.png" height="400px" width="900px"></p>
+
+근데 여기서 들만한 궁금증은 $\sum \xi$ 앞의 $C$는 갑자기 뭐냐는 것입니다. 이것은 hyper parameter, 즉 알고리즘의 사용자가 직접 정해줘야 하는 값입니다. 원하는 대로 아무거나 정할 수 있는데요, 이것이 가지는 의미는 꽤나 직관적입니다. 목적함수 $|w|^2/2 + C \sum \xi$를 최소화하고 싶은데, $C$가 커지면 어떻게 될까요? $\sum \xi$가 더 작아질 수 있도록 하는 방향으로 최적화가 이뤄질 것이고, 결국 margin은 줄어들 것입니다. 반대로 $C$가 작아지면 $\sum \xi$가 조금 더 커져도 될 것이고 대신 margin이 커지게 되겠죠. 위의 그림에서 왼쪽은 $C$가 더 작은 경우이고, 오른쪽은 $C$가 더 큰 경우로 보아도 무방하겠습니다.  
+
 
 ---
 
