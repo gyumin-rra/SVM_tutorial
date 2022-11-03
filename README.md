@@ -72,7 +72,9 @@ $$R_(w)\leq R_{emp}(w)+\sqrt{\frac{h(ln({2l \over h})+1)-ln({\delta \over 4})}{l
 ---
 
 ## Concepts of Support Vector Machine(SVM)
-SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 +1과 -1로(사실 다른 수여도 괜찮습니다.)이진분류하는 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 모든 종류의 초평면은 $w \cdot x + b =0$ 로 나타낼 수 있으니까($x$는 미지수 벡터 $w$는 가중치 벡터입니다.) SVM은 결국 $w \cdot x + b =0$에서 $w$랑 $b$를 찾아내는 것인 셈입니다. 그럼 그것을 어떻게 찾아낼까요? 우선 기준이 필요합니다. 데이터를 분류하는 초평면 $w \cdot x + b =0$가 있다고 할 때, 이것에 평행하면서 동일한 간격으로 떨어진 두 개의 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$을 생각해봅시다. 그리고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 $w \cdot x + b =0$를 적절히 조절할 수도 있겠죠. 그림으로 나타내면 아래와 같은 상황이 될 것입니다. 
+SVM을 한마디로 정의하면 "선형분류기"입니다. 데이터를 +1과 -1로(사실 다른 수여도 괜찮습니다.)이진분류하는 초평면(hyperplane)을 찾아내는 알고리즘들 중 하나이죠. 모든 종류의 초평면은 $w \cdot x + b =0$ 로 나타낼 수 있으니까($x$는 미지수 벡터 $w$는 가중치 벡터입니다.) SVM은 결국 $w \cdot x + b =0$에서 $w$랑 $b$를 찾아내는 것인 셈입니다. 그럼 그것을 어떻게 찾아낼까요? 우선 가장 기본적인 형태의 SVM의 경우를 살펴보겠습니다.
+
+데이터를 분류하는 초평면 $w \cdot x + b =0$가 있다고 할 때, 이것에 평행하면서 동일한 간격으로 떨어진 두 개의 초평면 $w \cdot x + b =1$과 $w \cdot x + b =-1$을 생각해봅시다. 그리고 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 $w \cdot x + b =0$를 적절히 조절할 수도 있겠죠. 그림으로 나타내면 아래와 같은 상황이 될 것입니다. 
 <p align="center"><img src="https://user-images.githubusercontent.com/112034941/199650392-215e2bd5-7b92-4fd0-b02d-ff2a44acbb65.png" height="450px" width="600px"></p>
 
 위와 같은 상황에서, SVM에서 찾고자 하는 초평면은 $w \cdot x + b =1$과 $w \cdot x + b =-1$ 사이의 "간격"을 최대화하는 $w \cdot x + b =0$입니다. 이 간격을 margin이라고 부릅니다. 그러면 이 간격을 최대화하기 위해서는 무엇을 해야할까요? 초평면 $w \cdot x + b =0$를 찾아내는 과정은 결국 $w$와 $b$를 찾아내는 과정인데, margin은 이 중 $w$에만 관련이 있습니다. 왜 그러한지 한번 직접 margin을 구해보면서 알아보겠습니다.
@@ -83,12 +85,12 @@ $w \cdot x_+ = 1-b$, $ w \cdot x_- = -1-b$이므로 $w \cdot (x_+ - x_-)=2$ 이�
 
 $w \cdot (x_+ - x_-)= |w| \cdot |(x_+ - x_-)|$ 인데, 앞서 정의했듯 $|(x_+ - x_-)| = margin = p$이므로
 
-$|w| \cdot |(x_+ - x_-)|=2 \Rightarrow p=\frac{2}{|w|} $입니다. 
+$|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다. 
 
+**따라서, margin은 $w$의 함수입니다!**
 
-$ line 2$
-
-
+정리하면, SVM은 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 조건을 만족하면서 margin, 즉 $2/|w|$를 최대화하는 초평면 $w \cdot x + b =0$을 찾아내는 알고리즘이라고 할 수 있겠습니다. 여기까지가 가장 기본적인 형태의 SVM의 개념이었습니다. 이러한 case를 linearly seperable한 case에서의 SVM, 혹은 linear hard margin SVM이라고 합니다. 쉽게 말해 데이터가 선형분류기로 완벽하게 분류될 수 있다는 것입니다. 당연히, 그렇지 못한 case도 존재합니다. 그러한 경우에는 앞서 설정한 $w \cdot x + b \ge 1$의 영역에는 +1로 labeling된 객체, $w \cdot x + b \le -1$의 영역에는 -1 labeling된 객체만 존재하도록 한다는 이 조건에 몇가지 조건을 추가하면서 $2/|w|$를 최대화하게 됩니다. 그러한 케이스의 그림은 아래와 같이 나타낼 수 있습니다. 
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
 
 ---
 
