@@ -102,7 +102,7 @@ $|w| \cdot |(x_+ - x_-)|=2 \Rightarrow margin=p=\frac{2}{|w|} $입니다.
 
 ### SVM for Linearly Non-Seperable Case(soft margin)
 지금까지 살펴본 바와는 다르게 데이터를 완벽하게 분류할 수 있는 초평면을 찾을 수 없는 경우에서의 SVM은 linearly non-separable case의 SVM 혹은 linear soft margin SVM이라고 합니다. 앞서 hard margin case와 soft margin case와는 무엇이 다를까요? soft margin case에서는 완벽하게 분류되지 않는 점들에 대한 penenalty term인 $\xi$를 도입하여 linear hard margin case의 조건을 변형하고 $|w|^2/2$가 아닌 $|w|^2/2 + C \sum \xi$를 최소화하는 알고리즘이 됩니다. 그러한 케이스의 예시는 아래와 같이 나타낼 수 있습니다. 
-<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="600px"></p>
+<p align="center"><img src="https://user-images.githubusercontent.com/112034941/199658398-fb7678b1-2023-4457-af99-88f4ed866bdb.png" height="450px" width="630px"></p>
 
 이러한 케이스의 SVM 또한 $|w|^2/2 + C \sum \xi$를 목적함수로 가지고, linear hard margin case의 조건이 변형된 형태의 제약조건을 가지는 최적화문제로 formulation 됩니다. 우선 제약조건 부분에 대해 조금 더 자세히 살펴보겠습니다.
 
